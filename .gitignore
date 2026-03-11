@@ -1,0 +1,14 @@
+# Entorno virtual
+.venv/
+env/
+venv/
+
+# Base de datos local (Contiene datos sensibles/de prueba)
+*.db
+
+# Archivos temporales de Python
+__pycache__/
+*.py[cod]
+
+# Carpetas de VSCode
+.vscode/

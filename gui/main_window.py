@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from gui.client_view import ClientView
 
 class MainWindow(ctk.CTkFrame):
     def __init__(self, master, user_data):
@@ -38,11 +39,14 @@ class MainWindow(ctk.CTkFrame):
         for widget in self.content_frame.winfo_children():
             widget.destroy()
 
-        title = ctk.CTkLabel(self.content_frame, text=f"Viewing {view_name}", font=ctk.CTkFont(size=24))
-        title.pack(pady=20)
-
         if view_name == "Dashboard":
             self.show_dashboard_stats()
+        elif view_name == "Clients":
+            self.client_view = ClientView(self.content_frame)
+            self.client_view.pack(fill="both", expand=True)
+        else:
+            title = ctk.CTkLabel(self.content_frame, text=f"Viewing {view_name}", font=ctk.CTkFont(size=24))
+            title.pack(pady=20)
 
     def show_dashboard_stats(self):
         # mostrar un resumen rápido en el panl central
