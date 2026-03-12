@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from core.clients import add_client, get_all_clients
+from core.clients import add_client, get_all_clients, search_clients, delete_client
 
 class ClientView(ctk.CTkFrame):
     def __init__(self, master):
@@ -34,12 +34,17 @@ class ClientView(ctk.CTkFrame):
         self.save_btn = ctk.CTkButton(self.from_frame, text="Add Client", command=self.save_client)
         self.save_btn.grid(row=2, column=1, padx=10, pady=10)
 
-        # Lista de clientes
-        self.list_label = ctk.CTkLabel(self, text="Recent Clients:", font=ctk.CTkFont(weight="bold"))
-        self.list_label.pack(pady=(20, 0))
+        # Buscador
+        self.search_entry = ctk.CTkEntry(self, placeholder_text="Search clients by name or company...")
+        self.search_entry.pack(padx=20, pady=10, fill="x")
+        self.search_entry.bind("<KeyRelease>", lambda event: self.refresh_list())
 
-        self.display_area = ctk.CTkTextbox(self, height=200)
-        self.display_area.pack(padx=20, pady=10, fill="both", expand=True)
+        # Lista de clientes
+        self.list_frame = ctk.CTkScrollableFrame(self, label_text="Client List")
+        self.list_frame.pack(pady=10, padx=20, fill="both", expand=True)
+
+        #self.display_area = ctk.CTkTextbox(self, height=200)
+        #self.display_area.pack(padx=20, pady=10, fill="both", expand=True)
 
         self.refresh_list()
     
@@ -61,10 +66,36 @@ class ClientView(ctk.CTkFrame):
                 self.refresh_list()
     
     def refresh_list(self):
-        self.display_area.delete(0.0, 'end')
-        clients = get_all_clients()
+        # limpiar lista actual
+        for widget in self.list_frame.winfo_children():
+            widget.destroy()
+        
+        # obtener datos con o sin filtrar
+        search_term = self.search_entry.get()
+        if search_term:
+            clients = search_clients(search_term)
+        else:
+            clients = get_all_clients()
+
+        # mostrar cada cliente como una "fila"
         for c in clients:
-            self.display_area.insert('end', f"ID: {c[0]} | Name: {c[1]} | Co: {c[2]} | Status: {c[3]}\n")
+            row = ctk.CTkFrame(self.list_frame)
+            row.pack(fill="x", pady=2, padx=5)
+
+            # etiquet con datos
+            ctk.CTkLabel(row, text=f"{c[1]} ({c[2]})").pack(side="left", padx=10)
+            
+            # badge de estado
+            color = "green" if c[3] == "client" else "orange"
+            ctk.CTkLabel(row, text=c[3].upper(), text_color=color, font=ctk.CTkFont(size=10, weight="bold")).pack(side="left", padx=5)
+
+            # boton eliminar
+            ctk.CTkButton(row, text="Delete", fg_color="#A30000", width=60, height=20, command=lambda c_id=c[0]: self.remove_client(c_id)).pack(side="right", padx=10)
+        
+    def remove_client(self, client_id):
+        if delete_client(client_id):
+            self.refresh_list()
+            
 
 
 

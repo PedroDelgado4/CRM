@@ -37,6 +37,36 @@ def get_all_clients():
             
     return clients
 
+def search_clients(term):
+    # busqueda de clientes por nombre o empresa
+    connection = get_connection()
+    clients = []
+    if connection:
+        try:
+            cursor = connection.cursor()
+            query = """ SELECT id, full_name, company, status FROM clients WHERE full_name LIKE ? OR company LIKE ? """
+            filter_item = f"%{term}%"
+            cursor.execute(query, (filter_item, filter_item))
+            clients = cursor.fetchall()
+        except sqlite3.Error as e:
+            print(f"Error searching clients: {e}")
+        finally:
+            connection.close()
+    return clients
 
-
+def delete_client(client_id):
+    # eliminar cliente
+    connection = get_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            cursor.execute("DELETE FROM clients WHERE id = ?", (client_id,))
+            connection.commit()
+            return True
+        except sqlite3.Error as e:
+            print(f"Error deleting client: {e}")
+            return False
+        finally:
+            connection.close()
+    return False    
             
