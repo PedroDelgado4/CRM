@@ -3,7 +3,7 @@ from core.auth import get_all_users, add_user, delete_user
 
 class AdminView(ctk.CTkFrame):
     def __init__(self, master):
-        super().__init__(master, fg_color="gray20")
+        super().__init__(master, fg_color="white")
         print("Admin view init")
         self.grid_columnconfigure(0, weight=1)
         

@@ -20,9 +20,15 @@ class LoginFrame(ctk.CTkFrame):
         self.username_entry = ctk.CTkEntry(self, placeholder_text="Username", width=250)
         self.username_entry.grid(row=1, column=0, padx=20, pady=10)
 
+        self.username_entry.bind("<Return>", lambda event: self.attempt_login)
+
+
         # Campo de contraseña
         self.password_entry = ctk.CTkEntry(self, placeholder_text="Password", show="*", width=250)
         self.password_entry.grid(row=2, column=0, padx=20, pady=10)
+
+        self.password_entry.bind("<Return>", self.attempt_login)
+
 
         # Botón entrar
         self.login_button = ctk.CTkButton(self, text="Login", command=self.attempt_login)
@@ -32,7 +38,7 @@ class LoginFrame(ctk.CTkFrame):
         self.error_label = ctk.CTkLabel(self, text="", text_color="red")
         self.error_label.grid(row=4, column=0, padx=20, pady=5)
 
-    def attempt_login(self):
+    def attempt_login(self, event=None):
         username = self.username_entry.get()
         password = self.password_entry.get()
 
@@ -45,6 +51,9 @@ class LoginFrame(ctk.CTkFrame):
             self.login_callback(user_data)
         else:
             print("Invalid credentials!")
+            self.error_label.configure(text="Invalid username or password. Please check your credentials!")
+
+
 
 
 

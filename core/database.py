@@ -16,9 +16,8 @@ def initialize_db():
     if connection:
         cursor = connection.cursor()
 
-        # Tabla usuarios
+        # 1. TABLA USUARIOS
         cursor.execute('''
-        
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
@@ -26,34 +25,100 @@ def initialize_db():
             role TEXT NOT NULL CHECK(role IN ('admin', 'employee'))
         )''') 
 
-        # Tabl clientes
+        # 2. TABLA EMPRESAS (Accounts)
         cursor.execute('''
-        
-        CREATE TABLE IF NOT EXISTS clients (
+        CREATE TABLE IF NOT EXISTS companies (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            industry TEXT,
+            size TEXT,
+            website TEXT,
+            linkedin TEXT,
+            address TEXT
+        )''')
+
+        # 3. TABLA CONTACTOS
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS contacts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             full_name TEXT NOT NULL,
-            company TEXT,
+            company_id INTEGER, 
+            is_vip INTEGER DEFAULT 0,
             email TEXT,
             phone TEXT,
-            status TEXT DEFAULT 'lead',
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )''')  
+            position TEXT,
+            linkedin TEXT,
+            assigned_to INTEGER,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (company_id) REFERENCES companies (id),
+            FOREIGN KEY (assigned_to) REFERENCES users (id)
+        )''')
 
-
-        # Tabla de interacciones
+        # 4. TABLA PRODUCTOS/SERVICIOS
         cursor.execute('''
-        
+        CREATE TABLE IF NOT EXISTS products (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            description TEXT,
+            price REAL,
+            type TEXT CHECK(type IN ('product', 'service'))
+        )''')
+
+        # 5. TABLA OPORTUNIDADES
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS opportunities (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            status TEXT CHECK(status IN ('qualification', 'proposal', 'evaluation', 'negotiation', 'closed_won', 'closed_lost')),
+            priority TEXT CHECK(priority IN ('very_high', 'medium', 'low', 'very_low')),
+            assigned_to INTEGER,
+            estimated_value REAL,
+            proposal_deadline DATE,
+            expected_close_date DATE,
+            contact_id INTEGER,
+            company_id INTEGER,
+            FOREIGN KEY (assigned_to) REFERENCES users (id),
+            FOREIGN KEY (contact_id) REFERENCES contacts (id),
+            FOREIGN KEY (company_id) REFERENCES companies (id)
+        )''')
+
+        # 6. TABLA INTERACCIONES
+        cursor.execute('''
         CREATE TABLE IF NOT EXISTS interactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            client_id INTEGER,
+            contact_id INTEGER,
+            opportunity_id INTEGER,
+            type TEXT, 
             note TEXT,
-            date DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (client_id) REFERENCES clients (id)
-        )''') 
+            date_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+            status TEXT,
+            reminder_date DATE,
+            FOREIGN KEY (contact_id) REFERENCES contacts (id),
+            FOREIGN KEY (opportunity_id) REFERENCES opportunities (id)
+        )''')
 
-        # Tabla finanzas (ingresos y gastos)
+        # 7. TABLA INTERMEDIA: Productos en Interacciones
+        # Esto permite ligar varios productos a una sola reunion/nota
         cursor.execute('''
-        
+        CREATE TABLE IF NOT EXISTS interaction_products (
+            interaction_id INTEGER,
+            product_id INTEGER,
+            FOREIGN KEY (interaction_id) REFERENCES interactions (id),
+            FOREIGN KEY (product_id) REFERENCES products (id)
+        )''')
+
+        # 8. TABLA INTERMEDIA: Productos en Oportunidades
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS opportunity_products (
+            opportunity_id INTEGER,
+            product_id INTEGER,
+            quantity INTEGER DEFAULT 1,
+            FOREIGN KEY (opportunity_id) REFERENCES opportunities (id),
+            FOREIGN KEY (product_id) REFERENCES products (id)
+        )''')
+
+        # 9. TABLA FINANZAS
+        cursor.execute('''
         CREATE TABLE IF NOT EXISTS finances (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             entry_type TEXT CHECK(entry_type IN ('income', 'expense')),
@@ -62,16 +127,10 @@ def initialize_db():
             date DATE DEFAULT CURRENT_DATE
         )''')
 
+        # Admin por defect
         hashed_admin_pw = hashlib.sha256('admin123'.encode()).hexdigest()
-        
-        try:
-            cursor.execute('''
-                INSERT OR IGNORE INTO users (username, password, role) 
-                VALUES ('admin', ?, 'admin')
-            ''', (hashed_admin_pw,))
-        except Error as e:
-            print(f"Error creating default admin: {e}")
+        cursor.execute('INSERT OR IGNORE INTO users (username, password, role) VALUES ("admin", ?, "admin")', (hashed_admin_pw,))
         
         connection.commit()
         connection.close()
-        print("Database initialized succesfully")
+        print("Database initialized successfully with Pro Relational Model")
