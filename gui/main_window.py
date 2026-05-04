@@ -36,6 +36,7 @@ class MainWindow(ctk.CTkFrame):
         self.nav_buttons["Companies"] = self.create_nav_btn("Companies", self.icon_company)
         self.nav_buttons["Contacts"] = self.create_nav_btn("Contacts", self.icon_contact)
         self.nav_buttons["Finances"] = self.create_nav_btn("Finances", self.icon_finance)
+        self.nav_buttons["Products"] = self.create_nav_btn("Products", self.icon_product)
 
         # Usuario y notif
         self.user_btn = ctk.CTkButton(self.top_nav, text=f" {self.user_data[1]}", 
@@ -81,6 +82,8 @@ class MainWindow(ctk.CTkFrame):
         self.icon_user = get_icon("user.png")
         self.icon_admin = get_icon("settings.png")
         self.icon_bell = get_icon("bell.png")
+        self.icon_product = get_icon("package.png")
+
 
     def update_bell(self):
         reminders = get_today_reminders(self.user_data[0])
@@ -121,6 +124,10 @@ class MainWindow(ctk.CTkFrame):
             self.admin_view = AdminView(self.content_frame); self.admin_view.pack(fill="both", expand=True)
         elif view_name == "Profile":
             self.profile_view = ProfileView(self.content_frame, self.user_data).pack(fill="both", expand=True)
+        elif view_name == "Products":
+            from gui.product_view import ProductView
+            self.product_view = ProductView(self.content_frame)
+            self.product_view.pack(fill="both", expand=True)
         else:
             title = ctk.CTkLabel(self.content_frame, text=f"Viewing {view_name}", font=ctk.CTkFont(size=24))
             title.pack(pady=20)

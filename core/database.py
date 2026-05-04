@@ -60,8 +60,11 @@ def initialize_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             description TEXT,
-            price REAL,
-            type TEXT CHECK(type IN ('product', 'service'))
+            category TEXT,
+            min_price REAL,
+            billing_model TEXT,
+            status TEXT,
+            product_url TEXT
         )''')
 
         # 5. TABLA OPORTUNIDADES
