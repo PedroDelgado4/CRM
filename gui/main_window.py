@@ -6,6 +6,8 @@ from gui.company_view import CompanyView
 from gui.admin_view import AdminView
 from gui.profile_view import ProfileView
 from core.contacts import get_today_reminders 
+from gui.opportunity_view import OpportunityView
+from gui.interaction_view import InteractionView
 
 class MainWindow(ctk.CTkFrame):
     def __init__(self, master, user_data):
@@ -37,6 +39,8 @@ class MainWindow(ctk.CTkFrame):
         self.nav_buttons["Contacts"] = self.create_nav_btn("Contacts", self.icon_contact)
         self.nav_buttons["Finances"] = self.create_nav_btn("Finances", self.icon_finance)
         self.nav_buttons["Products"] = self.create_nav_btn("Products", self.icon_product)
+        self.nav_buttons["Opportunities"] = self.create_nav_btn("Opportunities", self.icon_opportunity)
+        self.nav_buttons["Interactions"] = self.create_nav_btn("Interactions", self.icon_interaction)
 
         # Usuario y notif
         self.user_btn = ctk.CTkButton(self.top_nav, text=f" {self.user_data[1]}", 
@@ -83,6 +87,8 @@ class MainWindow(ctk.CTkFrame):
         self.icon_admin = get_icon("settings.png")
         self.icon_bell = get_icon("bell.png")
         self.icon_product = get_icon("package.png")
+        self.icon_opportunity = get_icon("target.png")
+        self.icon_interaction = get_icon("interaction.png")
 
 
     def update_bell(self):
@@ -128,6 +134,12 @@ class MainWindow(ctk.CTkFrame):
             from gui.product_view import ProductView
             self.product_view = ProductView(self.content_frame)
             self.product_view.pack(fill="both", expand=True)
+        elif view_name == "Opportunities":
+               self.opp_view = OpportunityView(self.content_frame)
+               self.opp_view.pack(fill="both", expand=True)
+        elif view_name == "Interactions":
+            self.int_view = InteractionView(self.content_frame)
+            self.int_view.pack(fill="both", expand=True)    
         else:
             title = ctk.CTkLabel(self.content_frame, text=f"Viewing {view_name}", font=ctk.CTkFont(size=24))
             title.pack(pady=20)
