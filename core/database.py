@@ -76,8 +76,10 @@ def initialize_db():
             priority TEXT CHECK(priority IN ('very_high', 'medium', 'low', 'very_low')),
             assigned_to INTEGER,
             estimated_value REAL,
+            actual_value REAL,
             proposal_deadline DATE,
             expected_close_date DATE,
+            actual_close_date DATE,
             contact_id INTEGER,
             company_id INTEGER,
             FOREIGN KEY (assigned_to) REFERENCES users (id),
@@ -125,6 +127,7 @@ def initialize_db():
         CREATE TABLE IF NOT EXISTS company_products (
             company_id INTEGER,
             product_id INTEGER,
+            acquisition_date DATE DEFAULT CURRENT_DATE, -- NUEVO: Para saber cuándo se vendió
             FOREIGN KEY (company_id) REFERENCES companies (id),
             FOREIGN KEY (product_id) REFERENCES products (id),
             PRIMARY KEY (company_id, product_id)

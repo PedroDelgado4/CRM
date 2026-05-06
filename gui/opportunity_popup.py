@@ -46,6 +46,7 @@ class AddOpportunityWindow(ctk.CTkToplevel):
         }
         self.priority_map = {
             "Very High": "very_high",
+            "High": "high",
             "Medium": "medium",
             "Low": "low",
             "Very Low": "very_low"

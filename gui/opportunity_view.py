@@ -111,6 +111,7 @@ class OpportunityView(ctk.CTkFrame):
     def get_priority_color(self, priority):
         colors = {
             "very_high": self.color_brick,
+            "high": "#e74c3c",
             "medium": "#fd7600",
             "low": "#5dade2",
             "very_low": "gray"

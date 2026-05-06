@@ -70,6 +70,25 @@ def delete_product(product_id):
         finally: connection.close()
     return False
 
+def update_product(product_id, name, description, category, min_price, billing_model, status, product_url):
+    connection = get_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            query = """
+            UPDATE products 
+            SET name=?, description=?, category=?, min_price=?, billing_model=?, status=?, product_url=?
+            WHERE id=?
+            """
+            cursor.execute(query, (name, description, category, min_price, billing_model, status, product_url, product_id))
+            connection.commit()
+            return True
+        except sqlite3.Error as e:
+            print(f"Error updating product: {e}")
+            return False
+        finally:
+            connection.close()
+    return False
 
             
 

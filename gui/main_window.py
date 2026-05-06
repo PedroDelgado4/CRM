@@ -132,7 +132,7 @@ class MainWindow(ctk.CTkFrame):
             self.profile_view = ProfileView(self.content_frame, self.user_data).pack(fill="both", expand=True)
         elif view_name == "Products":
             from gui.product_view import ProductView
-            self.product_view = ProductView(self.content_frame)
+            self.product_view = ProductView(self.content_frame, self.user_data)
             self.product_view.pack(fill="both", expand=True)
         elif view_name == "Opportunities":
                self.opp_view = OpportunityView(self.content_frame)
