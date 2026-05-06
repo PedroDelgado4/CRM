@@ -2,6 +2,7 @@ import customtkinter as ctk
 from core.interactions import add_interaction
 from core.contacts import get_all_contacts
 from core.opportunities import get_all_opportunities
+from gui.alerts import show_alert
 
 class AddInteractionWindow(ctk.CTkToplevel):
     def __init__(self, parent):
@@ -89,7 +90,7 @@ class AddInteractionWindow(ctk.CTkToplevel):
         # 2. Obtener IDs (Validar que se eligió un contacto)
         cont_id = self.contact_dict.get(self.contact_var.get())
         if not cont_id:
-            # Si no elige contacto, fallamos silenciosamente o podríamos mostrar una alerta visual
+            show_alert(self, "Validation Error", "You must select a contact before saving.")
             return 
             
         opp_id = self.opp_dict.get(self.opp_var.get()) # Esto puede ser None, y es correcto.

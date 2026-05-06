@@ -120,6 +120,16 @@ def initialize_db():
             FOREIGN KEY (product_id) REFERENCES products (id)
         )''')
 
+        # 8.5 TABLA INTERMEDIA: Productos vinculados al Cliente (Cartera)
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS company_products (
+            company_id INTEGER,
+            product_id INTEGER,
+            FOREIGN KEY (company_id) REFERENCES companies (id),
+            FOREIGN KEY (product_id) REFERENCES products (id),
+            PRIMARY KEY (company_id, product_id)
+        )''')
+
         # 9. TABLA FINANZAS
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS finances (

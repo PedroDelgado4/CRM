@@ -9,9 +9,10 @@ class InteractionView(ctk.CTkFrame):
         super().__init__(master, fg_color="transparent")
         
         self.color_green = "#2E8D1B"
-        self.color_silver = "#D9D9D9"
+        self.color_silver = "#797575"
         self.color_header = "#3F3F3F"
         self.color_brick = "#A52A2A"
+        self.color_white = "#D9D9D9"
 
         # orden por defecto: fecha descendente
         self.current_sort = "i.date_time"
@@ -53,13 +54,13 @@ class InteractionView(ctk.CTkFrame):
         for i, (text, sort_key) in enumerate(self.headers_info):
             if sort_key:
                 btn = ctk.CTkButton(self.header_frame, text=text, fg_color="transparent", 
-                                   text_color=self.color_silver, font=ctk.CTkFont(size=11, weight="bold"),
+                                   text_color=self.color_white, font=ctk.CTkFont(size=11, weight="bold"),
                                    width=self.col_widths[i], anchor="center", corner_radius=0,
                                    hover_color="#4F4F4F", command=lambda k=sort_key: self.set_sort(k))
                 btn.grid(row=0, column=i, padx=5, pady=5)
                 self.header_buttons[sort_key] = btn
             else:
-                lbl = ctk.CTkLabel(self.header_frame, text=text, text_color=self.color_silver, 
+                lbl = ctk.CTkLabel(self.header_frame, text=text, text_color=self.color_white, 
                                    font=ctk.CTkFont(size=11, weight="bold"), width=self.col_widths[i], anchor="center")
                 lbl.grid(row=0, column=i, padx=5, pady=5)
 

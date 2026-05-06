@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from core.products import add_product
+from gui.alerts import show_alert
 
 class AddProductWindow(ctk.CTkToplevel):
     def __init__(self, parent):
@@ -79,6 +80,7 @@ class AddProductWindow(ctk.CTkToplevel):
         name = self.name_entry.get()
         if not name or name.strip() == "":
             self.name_entry.configure(border_color="#A52A2A")
+            show_alert(self, "Validation Error", "You must enter a name before saving.")
             return
         self.name_entry.configure(border_color=self.color_green)
 
