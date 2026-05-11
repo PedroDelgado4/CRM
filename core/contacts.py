@@ -161,3 +161,34 @@ def add_interaction(contact_id, note, reminder_date=None, opportunity_id=None):
         finally:
             connection.close()
     return False
+
+def get_contact_by_id(contact_id):
+    connection = get_connection()
+    contact = None
+    if connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM contacts WHERE id = ?", (contact_id,))
+        contact = cursor.fetchone()
+        connection.close()
+    return contact
+
+def update_contact(contact_id, full_name, company_id, is_vip, email, phone, position, linkedin, assigned_to):
+    connection = get_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            query = """
+            UPDATE contacts 
+            SET full_name=?, company_id=?, is_vip=?, email=?, phone=?, position=?, linkedin=?, assigned_to=? WHERE id=?
+            """
+            cursor.execute(query, (full_name, company_id, is_vip, email, phone, position, linkedin, assigned_to, contact_id))
+            connection.commit()
+            return True
+        except sqlite3.Error as e:
+            print(f"Error updating contact: {e}")
+            return False
+        finally:
+            connection.close()
+    return False
+
+    

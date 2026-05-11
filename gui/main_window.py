@@ -123,7 +123,7 @@ class MainWindow(ctk.CTkFrame):
         
         if view_name == "Dashboard": self.show_dashboard_stats()
         elif view_name == "Companies": 
-            self.company_view = CompanyView(self.content_frame); self.company_view.pack(fill="both", expand=True)
+            self.company_view = CompanyView(self.content_frame, self.user_data); self.company_view.pack(fill="both", expand=True)
         elif view_name == "Contacts": 
             self.contact_view = ContactView(self.content_frame, self.user_data); self.contact_view.pack(fill="both", expand=True)
         elif view_name == "Admin":
@@ -135,10 +135,10 @@ class MainWindow(ctk.CTkFrame):
             self.product_view = ProductView(self.content_frame, self.user_data)
             self.product_view.pack(fill="both", expand=True)
         elif view_name == "Opportunities":
-               self.opp_view = OpportunityView(self.content_frame)
+               self.opp_view = OpportunityView(self.content_frame, self.user_data)
                self.opp_view.pack(fill="both", expand=True)
         elif view_name == "Interactions":
-            self.int_view = InteractionView(self.content_frame)
+            self.int_view = InteractionView(self.content_frame, self.user_data)
             self.int_view.pack(fill="both", expand=True)    
         else:
             title = ctk.CTkLabel(self.content_frame, text=f"Viewing {view_name}", font=ctk.CTkFont(size=24))

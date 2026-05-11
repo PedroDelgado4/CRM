@@ -54,3 +54,18 @@ def delete_company(company_id):
             return True
         finally: connection.close()
     return False
+
+def update_company(company_id, name, industry, size, website, linkedin, address):
+    connection = get_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            query = "UPDATE companies SET name=?, industry=?, size=?, website=?, linkedin=?, address=? WHERE id=?"
+            cursor.execute(query, (name, industry, size, website, linkedin, address, company_id))
+            connection.commit()
+            return True
+        except sqlite3.Error: 
+            return False
+        finally: 
+            connection.close()
+    return False

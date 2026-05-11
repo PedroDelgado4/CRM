@@ -6,8 +6,9 @@ from core.companies import get_all_companies, search_companies, delete_company
 from gui.company_popup import AddCompanyWindow
 
 class CompanyView(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, user_data):
         super().__init__(master, fg_color="transparent")
+        self.user_data = user_data
         
         # Colores
         self.color_green = "#2E8D1B"
@@ -99,6 +100,7 @@ class CompanyView(ctk.CTkFrame):
             return None
         self.img_delete = get_img("trash.png")
         self.img_view = get_img("eye.png") 
+        self.img_edit = get_img("edit.png")
 
     def refresh_list(self):
         for widget in self.list_frame.winfo_children(): widget.destroy()
@@ -134,28 +136,29 @@ class CompanyView(ctk.CTkFrame):
             actions = ctk.CTkFrame(row, fg_color="transparent", width=self.col_widths[6])
             actions.grid(row=0, column=6, padx=5)
             
-            # Sub-contenedor para centrar los botones
             btn_container = ctk.CTkFrame(actions, fg_color="transparent")
             btn_container.pack(expand=True)
             
-            # Botón Ojo (Ver Ficha)
-            ctk.CTkButton(btn_container, text="👁️" if not self.img_view else "", image=self.img_view, 
+            # Botón Ojo (Ver Ficha - Para todos)
+            ctk.CTkButton(btn_container, text="", image=self.img_view, 
                           width=28, height=28, fg_color="#3498db", hover_color="#21618c",
                           command=lambda c_id=comp[0]: self.open_profile(c_id)).pack(side="left", padx=(0, 5))
 
-            # Botón Papelera
-            ctk.CTkButton(btn_container, text="🗑️" if not self.img_delete else "", image=self.img_delete, 
-                          width=28, height=28, fg_color=self.color_brick, hover_color="#7A1F1F",
-                          command=lambda c_id=comp[0]: self.remove_company(c_id)).pack(side="left")
+            # Botón Editar (Para todos)
+            ctk.CTkButton(btn_container, text="", image=self.img_edit, 
+                          width=28, height=28, fg_color="#f39c12", hover_color="#d68910",
+                          command=lambda comp_data=comp: self.open_add_company_window(comp_data)).pack(side="left", padx=(0, 5))
 
-            # Línea divisoria
-            ctk.CTkFrame(self.list_frame, height=1, fg_color="#2A2A2A").pack(fill="x", padx=10)
+            # Botón Papelera (SOLO ADMIN)
+            if self.user_data[2] == 'admin':
+                ctk.CTkButton(btn_container, text="", image=self.img_delete, 
+                              width=28, height=28, fg_color=self.color_brick, hover_color="#7A1F1F",
+                              command=lambda c_id=comp[0]: self.remove_company(c_id)).pack(side="left")
 
-    def open_add_company_window(self):
+    def open_add_company_window(self, company_data=None):
         if not hasattr(self, "add_win") or not self.add_win.winfo_exists():
-            self.add_win = AddCompanyWindow(self)
-        else:
-            self.add_win.focus()
+            self.add_win = AddCompanyWindow(self, company_data)
+        self.add_win.focus()
 
     def remove_company(self, company_id):
         if delete_company(company_id): self.refresh_list()

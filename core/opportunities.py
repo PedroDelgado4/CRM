@@ -80,3 +80,33 @@ def delete_opportunity(opp_id):
         finally:
             connection.close()
     return False
+
+def get_opportunity_by_id(opp_id):
+    connection = get_connection()
+    opp = None
+    if connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM opportunities WHERE id = ?", (opp_id,))
+        opp = cursor.fetchone()
+        connection.close()
+    return opp
+
+def update_opportunity(opp_id, name, status, priority, estimated_value, proposal_deadline, expected_close_date, contact_id, company_id, assigned_to):
+    connection = get_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            query = """
+            UPDATE opportunities 
+            SET name=?, status=?, priority=?, estimated_value=?, proposal_deadline=?, expected_close_date=?, contact_id=?, company_id=?, assigned_to=?
+            WHERE id=?
+            """
+            cursor.execute(query, (name, status, priority, estimated_value, proposal_deadline, expected_close_date, contact_id, company_id, assigned_to, opp_id))
+            connection.commit()
+            return True
+        except sqlite3.Error as e:
+            print(f"Error updating opportunity: {e}")
+            return False
+        finally:
+            connection.close()
+    return False

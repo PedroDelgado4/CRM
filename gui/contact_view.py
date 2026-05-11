@@ -163,18 +163,29 @@ class ContactView(ctk.CTkFrame):
             actions = ctk.CTkFrame(row, fg_color="transparent", width=self.col_widths[7])
             actions.grid(row=0, column=7, padx=5)
             
-            ctk.CTkButton(actions, text="", image=self.img_view, width=25, height=25, fg_color="gray30",
+            btn_container = ctk.CTkFrame(actions, fg_color="transparent")
+            btn_container.pack(expand=True)
+            
+            # Botón Ojo (Ver Ficha - Para todos)
+            ctk.CTkButton(btn_container, text="", image=self.img_view, width=28, height=28, fg_color="#3498db", hover_color="#21618c",
                           command=lambda d=c: self.open_details(d)).pack(side="left", padx=2)
-            ctk.CTkButton(actions, text="", image=self.img_delete, width=25, height=25, fg_color=self.color_brick,
-                          command=lambda c_id=c[0]: self.remove_contact(c_id)).pack(side="left", padx=2)
+            
+            # Botón Editar (Para todos)
+            ctk.CTkButton(btn_container, text="", image=self.img_edit, width=28, height=28, fg_color="#f39c12", hover_color="#d68910",
+                          command=lambda c_id=c[0]: self.open_add_contact_window(c_id)).pack(side="left", padx=2)
+
+            # Botón Papelera (SOLO ADMIN)
+            if self.user_data[2] == 'admin':
+                ctk.CTkButton(btn_container, text="", image=self.img_delete, width=28, height=28, fg_color=self.color_brick, hover_color="#7A1F1F",
+                              command=lambda c_id=c[0]: self.remove_contact(c_id)).pack(side="left", padx=2)
 
             # Liinea divisoria
             ctk.CTkFrame(self.list_frame, height=1, fg_color="#2A2A2A").pack(fill="x", padx=10)
 
-    def open_add_contact_window(self):
+    def open_add_contact_window(self, contact_id=None):
         if not hasattr(self, "add_win") or not self.add_win.winfo_exists():
             from gui.contact_popup import AddContactWindow
-            self.add_win = AddContactWindow(self)
+            self.add_win = AddContactWindow(self, contact_id)
         self.add_win.focus()
 
     def open_details(self, contact_data): 

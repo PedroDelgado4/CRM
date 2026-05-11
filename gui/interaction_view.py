@@ -5,9 +5,12 @@ from core.interactions import get_all_interactions, search_interactions, delete_
 from gui.interaction_popup import AddInteractionWindow
 
 class InteractionView(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, user_data):
         super().__init__(master, fg_color="transparent")
-        
+        self.user_data = user_data
+
+        # COLORES
+
         self.color_green = "#2E8D1B"
         self.color_silver = "#797575"
         self.color_header = "#3F3F3F"
@@ -97,6 +100,7 @@ class InteractionView(ctk.CTkFrame):
             if os.path.exists(path): return ctk.CTkImage(Image.open(path), size=(16, 16))
             return None
         self.img_delete = get_img("trash.png")
+        self.img_edit = get_img("edit.png")
 
     def get_type_color(self, type_str):
         colors = {
@@ -153,15 +157,24 @@ class InteractionView(ctk.CTkFrame):
             # Col 6: Actions
             actions = ctk.CTkFrame(row, fg_color="transparent", width=self.col_widths[6])
             actions.grid(row=0, column=6, padx=5)
-            ctk.CTkButton(actions, text="", image=self.img_delete, width=28, height=28, fg_color=self.color_brick, hover_color="#7A1F1F",
-                          command=lambda inter_id=i[0]: self.remove_interaction(inter_id)).pack(expand=True)
+            
+            btn_container = ctk.CTkFrame(actions, fg_color="transparent")
+            btn_container.pack(expand=True)
+            
+            # Botón Editar (Para todos)
+            ctk.CTkButton(btn_container, text="", image=self.img_edit, width=28, height=28, fg_color="#f39c12", hover_color="#d68910",
+                          command=lambda inter_id=i[0]: self.open_add_interaction_window(inter_id)).pack(side="left", padx=2)
 
+            # Botón Papelera (SOLO ADMIN)
+            if self.user_data[2] == 'admin':
+                ctk.CTkButton(btn_container, text="", image=self.img_delete, width=28, height=28, fg_color=self.color_brick, hover_color="#7A1F1F",
+                              command=lambda inter_id=i[0]: self.remove_interaction(inter_id)).pack(side="left", padx=2)
             # Separador
             ctk.CTkFrame(self.list_frame, height=1, fg_color="#2A2A2A").pack(fill="x", padx=10)
 
-    def open_add_interaction_window(self):
+    def open_add_interaction_window(self, interaction_id=None):
         if not hasattr(self, "add_win") or not self.add_win.winfo_exists():
-            self.add_win = AddInteractionWindow(self)
+            self.add_win = AddInteractionWindow(self, interaction_id)
         self.add_win.focus()
 
     def remove_interaction(self, inter_id): 

@@ -81,3 +81,33 @@ def delete_interaction(interaction_id):
         finally:
             connection.close()
     return False
+
+def get_interaction_by_id(interaction_id):
+    connection = get_connection()
+    interaction = None
+    if connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM interactions WHERE id = ?", (interaction_id,))
+        interaction = cursor.fetchone()
+        connection.close()
+    return interaction
+
+def update_interaction(interaction_id, contact_id, opportunity_id, interaction_type, note, status, reminder_date):
+    connection = get_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            query = """
+            UPDATE interactions 
+            SET contact_id=?, opportunity_id=?, type=?, note=?, status=?, reminder_date=?
+            WHERE id=?
+            """
+            cursor.execute(query, (contact_id, opportunity_id, interaction_type, note, status, reminder_date, interaction_id))
+            connection.commit()
+            return True
+        except sqlite3.Error as e:
+            print(f"Error updating interaction: {e}")
+            return False
+        finally:
+            connection.close()
+    return False
