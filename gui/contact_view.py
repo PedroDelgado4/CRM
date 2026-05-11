@@ -6,6 +6,7 @@ from core.contacts import add_contact, get_all_contacts, delete_contact, get_con
 from core.companies import get_all_companies 
 from gui.client_details import ClientDetailsWindow 
 from core.auth import get_all_users
+from core.csv_utils import import_contacts_csv, export_table_to_csv
 
 class ContactView(ctk.CTkFrame): 
     def __init__(self, master, user_data):
@@ -35,10 +36,17 @@ class ContactView(ctk.CTkFrame):
         self.search_entry.pack(side="left", padx=5)
         self.search_entry.bind("<KeyRelease>", lambda e: self.refresh_list())
 
+        # Añadir Contacto
         self.add_btn = ctk.CTkButton(self.toolbar, text="+ New Contact", width=120, 
                                     fg_color=self.color_green, hover_color="#246B15",
                                     command=self.open_add_contact_window)
         self.add_btn.pack(side="right", padx=5)
+
+        # Importar CSV (a la izquierda de New Contact)
+        self.import_btn = ctk.CTkButton(self.toolbar, text="⬆️ Import CSV", width=110, 
+                                    fg_color="#3F3F3F", hover_color="#4F4F4F",
+                                    command=self.run_import)
+        self.import_btn.pack(side="right", padx=5)
 
         # CONFIGURACIÓN DE COLUMNAS
         self.col_widths = [40, 160, 140, 180, 120, 120, 120, 100]
@@ -194,3 +202,16 @@ class ContactView(ctk.CTkFrame):
 
     def remove_contact(self, contact_id): 
         if delete_contact(contact_id): self.refresh_list()
+
+    def run_import(self):
+        # Ejecuta la lógica de importación y refresca la tabla si ha habido éxito
+        if import_contacts_csv():
+            self.refresh_list()
+
+    def run_export(self):
+        from core.contacts import get_all_contacts
+        # Recuperamos los datos con la ordenación actual
+        data = get_all_contacts(self.current_sort, self.sort_order)
+        # El SQL devuelve: id, full_name, company_name, is_vip, email, phone, position, linkedin, assigned_to
+        headers = ["ID", "Full Name", "Company", "VIP Status", "Email", "Phone", "Position", "LinkedIn", "Assigned User ID"]
+        export_table_to_csv(headers, data, "contacts_export")

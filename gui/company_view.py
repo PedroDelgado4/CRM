@@ -4,6 +4,7 @@ import webbrowser
 from PIL import Image
 from core.companies import get_all_companies, search_companies, delete_company
 from gui.company_popup import AddCompanyWindow
+from core.csv_utils import export_table_to_csv, import_companies_csv
 
 class CompanyView(ctk.CTkFrame):
     def __init__(self, master, user_data):
@@ -44,6 +45,15 @@ class CompanyView(ctk.CTkFrame):
                                     fg_color=self.color_green, command= self.open_add_company_window,
                                     hover_color="#246B15")
         self.add_btn.pack(side="right", padx=5)
+        self.export_btn = ctk.CTkButton(self.toolbar, text="📥 Export CSV", width=110, 
+                                    fg_color="#3F3F3F", hover_color="#4F4F4F",
+                                    command=self.run_export)
+        self.export_btn.pack(side="right", padx=5)
+
+        self.import_btn = ctk.CTkButton(self.toolbar, text="⬆️ Import CSV", width=110, 
+                                        fg_color="#3F3F3F", hover_color="#4F4F4F",
+                                        command=self.run_import)
+        self.import_btn.pack(side="right", padx=5)
 
         # CABECERA 
         self.header_frame = ctk.CTkFrame(self, height=35, corner_radius=0, fg_color=self.color_header)
@@ -185,3 +195,14 @@ class CompanyView(ctk.CTkFrame):
         self.header_frame.pack(fill="x", padx=10)
         self.list_frame.pack(pady=(0, 10), padx=10, fill="both", expand=True)
         self.refresh_list()
+
+    def run_export(self):
+        from core.companies import get_all_companies
+        # Recuperamos los datos con el orden actual de la tabla
+        data = get_all_companies(self.current_sort, self.sort_order)
+        headers = ["ID", "Company Name", "Industry", "Size", "Website", "LinkedIn", "Address"]
+        export_table_to_csv(headers, data, "companies_export")
+
+    def run_import(self):
+        if import_companies_csv():
+            self.refresh_list()

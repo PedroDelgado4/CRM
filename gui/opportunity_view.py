@@ -4,6 +4,7 @@ from PIL import Image
 from core.opportunities import get_all_opportunities, search_opportunities, delete_opportunity, get_opportunity_products
 
 from gui.opportunity_popup import AddOpportunityWindow
+from core.csv_utils import export_table_to_csv
 
 class OpportunityView(ctk.CTkFrame):
     def __init__(self, master, user_data):
@@ -47,6 +48,11 @@ class OpportunityView(ctk.CTkFrame):
                                     fg_color=self.color_green, hover_color="#246B15",
                                     command=self.open_add_opportunity_window)
         self.add_btn.pack(side="right", padx=5)
+
+        self.export_btn = ctk.CTkButton(self.toolbar, text="📥 Export CSV", width=110, 
+                                    fg_color="#3F3F3F", hover_color="#4F4F4F",
+                                    command=self.run_export)
+        self.export_btn.pack(side="right", padx=5)
 
         # CABECERA
         self.header_frame = ctk.CTkFrame(self, height=35, corner_radius=0, fg_color=self.color_header)
@@ -205,3 +211,9 @@ class OpportunityView(ctk.CTkFrame):
 
     def remove_opportunity(self, opp_id): 
         if delete_opportunity(opp_id): self.refresh_list()
+
+    def run_export(self):
+        from core.opportunities import get_all_opportunities
+        data = get_all_opportunities(self.current_sort, self.sort_order)
+        headers = ["ID", "Opportunity Name", "Status", "Priority", "Value", "Proposal Date", "Close Date", "Contact ID", "Company ID", "Assigned To"]
+        export_table_to_csv(headers, data, "opportunities_export")

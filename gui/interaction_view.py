@@ -3,6 +3,7 @@ import os
 from PIL import Image
 from core.interactions import get_all_interactions, search_interactions, delete_interaction, get_interaction_products
 from gui.interaction_popup import AddInteractionWindow
+from core.csv_utils import export_table_to_csv
 
 class InteractionView(ctk.CTkFrame):
     def __init__(self, master, user_data):
@@ -47,6 +48,11 @@ class InteractionView(ctk.CTkFrame):
                                     fg_color=self.color_green, hover_color="#246B15",
                                     command=self.open_add_interaction_window)
         self.add_btn.pack(side="right", padx=5)
+        
+        self.export_btn = ctk.CTkButton(self.toolbar, text="📥 Export CSV", width=110, 
+                                    fg_color="#3F3F3F", hover_color="#4F4F4F",
+                                    command=self.run_export)
+        self.export_btn.pack(side="right", padx=5)
 
         # CABECERA
         self.header_frame = ctk.CTkFrame(self, height=35, corner_radius=0, fg_color=self.color_header)
@@ -184,7 +190,7 @@ class InteractionView(ctk.CTkFrame):
 
             # Separador
             ctk.CTkFrame(self.list_frame, height=1, fg_color="#2A2A2A").pack(fill="x", padx=10)
-            
+
     def open_add_interaction_window(self, interaction_id=None):
         if not hasattr(self, "add_win") or not self.add_win.winfo_exists():
             self.add_win = AddInteractionWindow(self, interaction_id)
@@ -192,3 +198,10 @@ class InteractionView(ctk.CTkFrame):
 
     def remove_interaction(self, inter_id): 
         if delete_interaction(inter_id): self.refresh_list()
+
+    def run_export(self):
+        from core.interactions import get_all_interactions
+        data = get_all_interactions(self.current_sort, self.sort_order)
+        # El SQL devuelve: id, note, type, date_time, status, reminder, contact_name, opp_name
+        headers = ["ID", "Notes", "Type", "Date & Time", "Status", "Reminder Date", "Contact Name", "Opportunity Name"]
+        export_table_to_csv(headers, data, "interactions_export")

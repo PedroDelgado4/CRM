@@ -4,6 +4,7 @@ import webbrowser
 from PIL import Image
 from core.products import get_all_products, search_products, delete_product
 from gui.product_popup import AddProductWindow
+from core.csv_utils import export_table_to_csv, import_products_csv
 
 class ProductView(ctk.CTkFrame):
     def __init__(self, master, user_data): 
@@ -40,6 +41,15 @@ class ProductView(ctk.CTkFrame):
                                     fg_color=self.color_green, hover_color="#246B15",
                                     command=self.open_add_product_window)
         self.add_btn.pack(side="right", padx=5)
+        self.export_btn = ctk.CTkButton(self.toolbar, text="📥 Export CSV", width=110, 
+                                    fg_color="#3F3F3F", hover_color="#4F4F4F",
+                                    command=self.run_export)
+        self.export_btn.pack(side="right", padx=5)
+
+        self.import_btn = ctk.CTkButton(self.toolbar, text="⬆️ Import CSV", width=110, 
+                                        fg_color="#3F3F3F", hover_color="#4F4F4F",
+                                        command=self.run_import)
+        self.import_btn.pack(side="right", padx=5)
 
         self.header_frame = ctk.CTkFrame(self, height=35, corner_radius=0, fg_color=self.color_header)
         self.header_frame.pack(fill="x", padx=10)
@@ -159,3 +169,14 @@ class ProductView(ctk.CTkFrame):
         
     def remove_product(self, product_id):
         if delete_product(product_id): self.refresh_list()
+
+    def run_export(self):
+        from core.products import get_all_products
+        data = get_all_products() 
+        # Ajusta estas cabeceras según las columnas exactas de tu tabla 'products'
+        headers = ["ID", "Product Name", "Description", "Category", "Price"] 
+        export_table_to_csv(headers, data, "products_export")
+
+    def run_import(self):
+        if import_products_csv():
+            self.refresh_list()
