@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from core.analytics import generate_html_report
+from core.analytics import generate_html_report, get_cross_selling_suggestions 
 from core.finances import get_finance_summary
 from core.opportunities import get_connection 
 
@@ -59,6 +59,35 @@ class DashboardView(ctk.CTkFrame):
             command=lambda: self.master.master.change_view("Finances")
         )
         self.finance_btn.grid(row=3, column=1, padx=10, pady=10, sticky="ew")
+        # --- SECCIÓN 3: POSIBILIDADES DE CRECIMIENTO (IA) ---
+        self.suggestions_label = ctk.CTkLabel(self.scroll_frame, text="💡 AI Insights: Growth Opportunities", font=ctk.CTkFont(size=18, weight="bold"), text_color="#f39c12")
+        self.suggestions_label.grid(row=4, column=0, columnspan=2, pady=(40, 15), sticky="w")
+
+        self.render_suggestions()
+
+    # Añade este nuevo método dentro de la clase DashboardView
+    def render_suggestions(self):
+        suggestions = get_cross_selling_suggestions()
+        
+        container = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
+        container.grid(row=5, column=0, columnspan=2, sticky="ew", padx=10, pady=(0, 20))
+        
+        if not suggestions:
+            ctk.CTkLabel(container, text="Excellent work! All your clients with contacts have active opportunities.", text_color=self.color_silver, font=ctk.CTkFont(style="italic")).pack(anchor="w", pady=10)
+            return
+
+        for s in suggestions:
+            # s[0] = id, s[1] = company name, s[2] = contact count
+            card = ctk.CTkFrame(container, fg_color=self.color_header, corner_radius=8)
+            card.pack(fill="x", pady=5)
+            
+            text_info = f"Target Account: {s[1]} (Has {s[2]} contact/s, but 0 active opportunities)"
+            ctk.CTkLabel(card, text=text_info, font=ctk.CTkFont(size=13, weight="bold")).pack(side="left", padx=15, pady=15)
+            
+            # Botón para ir directamente a la vista de Oportunidades y crear una nueva
+            action_btn = ctk.CTkButton(card, text="Create Opportunity", width=120, height=30, fg_color=self.color_green, hover_color="#246B15",
+                                       command=lambda: self.master.master.change_view("Opportunities"))
+            action_btn.pack(side="right", padx=15, pady=15)
 
     def render_growth_stats(self):
         # Cálculo rápido de crecimiento (Ventas closed_won este año vs pasado)

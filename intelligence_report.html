@@ -1,0 +1,49 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Sales Intelligence Report</title>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <style>
+            body { background: #000; color: #fff; font-family: sans-serif; padding: 40px; }
+            h1 { color: #deff9a; border-bottom: 1px solid #333; padding-bottom: 20px; }
+            .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 40px 0; }
+            .card { background: #1a1a1a; padding: 25px; border-radius: 15px; border: 1px solid #deff9a33; text-align: center; }
+            .card h3 { color: #deff9a; margin: 0; font-size: 14px; text-transform: uppercase; }
+            .card p { font-size: 32px; font-weight: bold; margin: 10px 0 0; }
+            .chart-box { background: #1a1a1a; padding: 30px; border-radius: 15px; }
+        </style>
+    </head>
+    <body>
+        <h1>Business <span>Intelligence</span> Report</h1>
+        <div class="grid">
+            <div class="card"><h3>Total Revenue</h3><p>115.00 €</p></div>
+            <div class="card"><h3>Win Rate</h3><p>100.0%</p></div>
+            <div class="card"><h3>Weighted Pipeline</h3><p>417.50 €</p></div>
+        </div>
+        <div class="chart-box">
+            <canvas id="myChart"></canvas>
+        </div>
+        <script>
+            new Chart(document.getElementById('myChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Curso 1', 'Curso 2', 'Servicio 1', 'Servicio 2'],
+                    datasets: [{
+                        label: 'Units Sold',
+                        data: [1, 2, 1, 2],
+                        backgroundColor: '#deff9a'
+                    }]
+                },
+                options: { 
+                    scales: { 
+                        y: { grid: { color: '#333' }, ticks: { color: '#fff' } },
+                        x: { ticks: { color: '#fff' } }
+                    },
+                    plugins: { legend: { labels: { color: '#fff' } } }
+                }
+            });
+        </script>
+    </body>
+    </html>
+    

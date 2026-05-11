@@ -3,6 +3,7 @@ import os
 from PIL import Image
 from core.finances import get_all_finances, search_finances, delete_finance, get_finance_summary
 from gui.finance_popup import AddFinanceWindow
+from core.csv_utils import export_table_to_csv
 
 class FinanceView(ctk.CTkFrame):
     def __init__(self, master, user_data):
@@ -39,6 +40,13 @@ class FinanceView(ctk.CTkFrame):
                                     fg_color=self.color_green, hover_color="#246B15",
                                     command=self.open_add_finance_window)
         self.add_btn.pack(side="right", padx=5)
+
+        self.export_btn = ctk.CTkButton(
+            self.toolbar, text="📥 Export CSV", width=120, 
+            fg_color="#3F3F3F", hover_color="#4F4F4F",
+            command=self.run_export
+        )
+        self.export_btn.pack(side="right", padx=5)
 
         # 3. CABECERA DE TABLA
         self.col_widths = [120, 100, 120, 350, 100]
@@ -165,3 +173,8 @@ class FinanceView(ctk.CTkFrame):
 
     def remove_entry(self, entry_id):
         if delete_finance(entry_id): self.refresh_list()
+
+    def run_export(self):
+        data = get_all_finances(self.current_sort, self.sort_order)
+        headers = ["ID", "Type", "Amount", "Description", "Date"]
+        export_table_to_csv(headers, data, "finance_report")
