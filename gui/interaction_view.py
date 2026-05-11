@@ -1,16 +1,14 @@
 import customtkinter as ctk
 import os
 from PIL import Image
-from core.interactions import get_all_interactions, search_interactions, delete_interaction
+from core.interactions import get_all_interactions, search_interactions, delete_interaction, get_interaction_products
 from gui.interaction_popup import AddInteractionWindow
 
 class InteractionView(ctk.CTkFrame):
     def __init__(self, master, user_data):
         super().__init__(master, fg_color="transparent")
         self.user_data = user_data
-
-        # COLORES
-
+        
         self.color_green = "#2E8D1B"
         self.color_silver = "#797575"
         self.color_header = "#3F3F3F"
@@ -123,19 +121,33 @@ class InteractionView(ctk.CTkFrame):
         interactions = search_interactions(term, self.current_sort, self.sort_order) if term else get_all_interactions(self.current_sort, self.sort_order)
 
         for r_idx, i in enumerate(interactions):
-            row = ctk.CTkFrame(self.list_frame, height=40, corner_radius=0, fg_color="transparent")
+            row = ctk.CTkFrame(self.list_frame, height=45, corner_radius=0, fg_color="transparent")
             row.pack(fill="x", pady=1)
+
+            # FORZAMOS LA REJILLA: Cada columna tendrá exactamente el ancho de la cabecera
+            for col_idx, width in enumerate(self.col_widths):
+                row.grid_columnconfigure(col_idx, minsize=width, weight=0)
             
-            # Col 0: Date & Time (SQLite devuelve ej: "2024-05-14 10:30:00")
+            # Col 0: Date & Time
             dt_text = i[3] if i[3] else "-"
-            # Limpiamos los milisegundos si SQLite los devuelve
             if "." in dt_text: dt_text = dt_text.split(".")[0]
             ctk.CTkLabel(row, text=dt_text, width=self.col_widths[0], anchor="center", font=ctk.CTkFont(weight="bold")).grid(row=0, column=0, padx=5)
 
-            # Col 1: Notes (Recortada)
+            # Col 1: Notes + Productos Tratados
             note_text = i[1] or "-"
             if len(note_text) > 35: note_text = note_text[:32] + "..."
-            ctk.CTkLabel(row, text=note_text, width=self.col_widths[1], anchor="w").grid(row=0, column=1, padx=5)
+            
+            linked_prods = get_interaction_products(i[0])
+            prod_txt = "Discussed: " + ", ".join([lp[1] for lp in linked_prods]) if linked_prods else ""
+            
+            # BLOQUEO DE TAMAÑO EN EL CONTENEDOR DE NOTAS
+            note_container = ctk.CTkFrame(row, fg_color="transparent", width=self.col_widths[1], height=40)
+            note_container.pack_propagate(False) # Prohíbe que el contenedor se encoja o estire
+            note_container.grid(row=0, column=1, padx=5, sticky="w")
+            
+            ctk.CTkLabel(note_container, text=note_text, anchor="w").pack(fill="x")
+            if prod_txt:
+                ctk.CTkLabel(note_container, text=prod_txt, anchor="w", font=ctk.CTkFont(size=10), text_color="#5dade2").pack(fill="x")
 
             # Col 2: Type (Con color)
             t_color = self.get_type_color(i[2])
@@ -155,23 +167,24 @@ class InteractionView(ctk.CTkFrame):
             ctk.CTkLabel(row, text=opp_text, width=self.col_widths[5], anchor="center").grid(row=0, column=5, padx=5)
 
             # Col 6: Actions
-            actions = ctk.CTkFrame(row, fg_color="transparent", width=self.col_widths[6])
+            # BLOQUEO DE TAMAÑO EN EL CONTENEDOR DE ACCIONES
+            actions = ctk.CTkFrame(row, fg_color="transparent", width=self.col_widths[6], height=35)
+            actions.pack_propagate(False) 
             actions.grid(row=0, column=6, padx=5)
             
             btn_container = ctk.CTkFrame(actions, fg_color="transparent")
             btn_container.pack(expand=True)
             
-            # Botón Editar (Para todos)
             ctk.CTkButton(btn_container, text="", image=self.img_edit, width=28, height=28, fg_color="#f39c12", hover_color="#d68910",
                           command=lambda inter_id=i[0]: self.open_add_interaction_window(inter_id)).pack(side="left", padx=2)
 
-            # Botón Papelera (SOLO ADMIN)
             if self.user_data[2] == 'admin':
                 ctk.CTkButton(btn_container, text="", image=self.img_delete, width=28, height=28, fg_color=self.color_brick, hover_color="#7A1F1F",
                               command=lambda inter_id=i[0]: self.remove_interaction(inter_id)).pack(side="left", padx=2)
+
             # Separador
             ctk.CTkFrame(self.list_frame, height=1, fg_color="#2A2A2A").pack(fill="x", padx=10)
-
+            
     def open_add_interaction_window(self, interaction_id=None):
         if not hasattr(self, "add_win") or not self.add_win.winfo_exists():
             self.add_win = AddInteractionWindow(self, interaction_id)

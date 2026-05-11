@@ -13,7 +13,7 @@ def add_interaction(contact_id, opportunity_id, interaction_type, note, status, 
             """
             cursor.execute(query, (contact_id, opportunity_id, interaction_type, note, status, reminder_date))
             connection.commit()
-            return True
+            return cursor.lastrowid
         except sqlite3.Error as e:
             print(f"Error adding interaction: {e}")
             return False
@@ -111,3 +111,40 @@ def update_interaction(interaction_id, contact_id, opportunity_id, interaction_t
         finally:
             connection.close()
     return False
+
+def link_product_to_interaction(inter_id, product_id):
+    connection = get_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            query = "INSERT OR REPLACE INTO interaction_products (interaction_id, product_id) VALUES (?, ?)"
+            cursor.execute(query, (inter_id, product_id))
+            connection.commit()
+            return True
+        finally:
+            connection.close()
+    return False
+
+def unlink_all_products_from_interaction(inter_id):
+    connection = get_connection()
+    if connection:
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM interaction_products WHERE interaction_id = ?", (inter_id,))
+        connection.commit()
+        connection.close()
+
+def get_interaction_products(inter_id):
+    connection = get_connection()
+    products = []
+    if connection:
+        cursor = connection.cursor()
+        query = """
+        SELECT p.id, p.name 
+        FROM products p
+        JOIN interaction_products ip ON p.id = ip.product_id
+        WHERE ip.interaction_id = ?
+        """
+        cursor.execute(query, (inter_id,))
+        products = cursor.fetchall()
+        connection.close()
+    return products

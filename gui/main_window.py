@@ -9,6 +9,8 @@ from core.contacts import get_today_reminders
 from gui.opportunity_view import OpportunityView
 from gui.interaction_view import InteractionView
 from gui.finance_view import FinanceView
+from gui.dashboard_view import DashboardView
+
 class MainWindow(ctk.CTkFrame):
     def __init__(self, master, user_data):
         super().__init__(master)
@@ -121,7 +123,9 @@ class MainWindow(ctk.CTkFrame):
             widget.destroy()
         self.update_bell()
         
-        if view_name == "Dashboard": self.show_dashboard_stats()
+        if view_name == "Dashboard":
+            self.dash_view = DashboardView(self.content_frame, self.user_data)
+            self.dash_view.pack(fill="both", expand=True)
         elif view_name == "Companies": 
             self.company_view = CompanyView(self.content_frame, self.user_data); self.company_view.pack(fill="both", expand=True)
         elif view_name == "Contacts": 

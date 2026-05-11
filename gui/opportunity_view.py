@@ -1,7 +1,8 @@
 import customtkinter as ctk
 import os
 from PIL import Image
-from core.opportunities import get_all_opportunities, search_opportunities, delete_opportunity
+from core.opportunities import get_all_opportunities, search_opportunities, delete_opportunity, get_opportunity_products
+
 from gui.opportunity_popup import AddOpportunityWindow
 
 class OpportunityView(ctk.CTkFrame):
@@ -133,24 +134,38 @@ class OpportunityView(ctk.CTkFrame):
         opps = search_opportunities(term, self.current_sort, self.sort_order) if term else get_all_opportunities(self.current_sort, self.sort_order)
 
         for r_idx, o in enumerate(opps):
-            row = ctk.CTkFrame(self.list_frame, height=40, corner_radius=0, fg_color="transparent")
+            row = ctk.CTkFrame(self.list_frame, height=45, corner_radius=0, fg_color="transparent")
             row.pack(fill="x", pady=1)
-            
-            # Col 0: Opp Name
-            ctk.CTkLabel(row, text=o[1], width=self.col_widths[0], anchor="center", font=ctk.CTkFont(weight="bold")).grid(row=0, column=0, padx=5)
 
-            # Col 1: Contact (Mostramos "Contacto - Empresa" si hay empresa)
+            # FORZAMOS LA REJILLA AQUÍ TAMBIÉN
+            for col_idx, width in enumerate(self.col_widths):
+                row.grid_columnconfigure(col_idx, minsize=width, weight=0)
+            
+            from core.opportunities import get_opportunity_products
+            linked_products = get_opportunity_products(o[0])
+            prod_names = ", ".join([p[1] for p in linked_products]) if linked_products else "No products linked"
+            if len(prod_names) > 40: prod_names = prod_names[:37] + "..."
+
+            # Col 0: Opp Name + Productos vinculados debajo
+            # BLOQUEO DE TAMAÑO EN EL NOMBRE
+            name_container = ctk.CTkFrame(row, fg_color="transparent", width=self.col_widths[0], height=40)
+            name_container.pack_propagate(False)
+            name_container.grid(row=0, column=0, padx=5, sticky="ew")
+            
+            ctk.CTkLabel(name_container, text=o[1], anchor="w", font=ctk.CTkFont(weight="bold")).pack(fill="x")
+            ctk.CTkLabel(name_container, text=prod_names, anchor="w", font=ctk.CTkFont(size=10), text_color="gray").pack(fill="x")
+
+            # Col 1: Contact
             client_text = o[7] or "No Contact"
             if o[8]: client_text += f" ({o[8]})"
-            # Recortar si es muy largo
             if len(client_text) > 22: client_text = client_text[:19] + "..."
             ctk.CTkLabel(row, text=client_text, width=self.col_widths[1], anchor="center", text_color=self.color_green).grid(row=0, column=1, padx=5)
 
-            # Col 2: Status (Con color)
+            # Col 2: Status
             s_color = self.get_status_color(o[2])
             ctk.CTkLabel(row, text=self.format_text(o[2]), width=self.col_widths[2], anchor="center", text_color=s_color, font=ctk.CTkFont(weight="bold")).grid(row=0, column=2, padx=5)
 
-            # Col 3: Priority (Con color)
+            # Col 3: Priority
             p_color = self.get_priority_color(o[3])
             ctk.CTkLabel(row, text=self.format_text(o[3]), width=self.col_widths[3], anchor="center", text_color=p_color).grid(row=0, column=3, padx=5)
 
@@ -165,21 +180,19 @@ class OpportunityView(ctk.CTkFrame):
             ctk.CTkLabel(row, text=o[9] or "Unassigned", width=self.col_widths[6], anchor="center").grid(row=0, column=6, padx=5)
 
             # Col 7: Actions
-            actions = ctk.CTkFrame(row, fg_color="transparent", width=self.col_widths[7])
+            # BLOQUEO DE TAMAÑO EN ACCIONES
+            actions = ctk.CTkFrame(row, fg_color="transparent", width=self.col_widths[7], height=35)
+            actions.pack_propagate(False)
             actions.grid(row=0, column=7, padx=5)
             
             btn_container = ctk.CTkFrame(actions, fg_color="transparent")
             btn_container.pack(expand=True)
             
-            # Botón Editar (Visible para todos)
-            ctk.CTkButton(btn_container, text="", image=self.img_edit, 
-                          width=28, height=28, fg_color="#f39c12", hover_color="#d68910",
+            ctk.CTkButton(btn_container, text="", image=self.img_edit, width=28, height=28, fg_color="#f39c12", hover_color="#d68910",
                           command=lambda opp_id=o[0]: self.open_add_opportunity_window(opp_id)).pack(side="left", padx=(0, 5))
 
-            # Botón Papelera (SOLO VISIBLE SI ES ADMIN)
             if self.user_data[2] == 'admin':
-                ctk.CTkButton(btn_container, text="", image=self.img_delete, 
-                              width=28, height=28, fg_color=self.color_brick, hover_color="#7A1F1F",
+                ctk.CTkButton(btn_container, text="", image=self.img_delete, width=28, height=28, fg_color=self.color_brick, hover_color="#7A1F1F",
                               command=lambda opp_id=o[0]: self.remove_opportunity(opp_id)).pack(side="left")
 
             # Separador
