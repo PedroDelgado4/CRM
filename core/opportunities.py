@@ -7,18 +7,19 @@ def add_opportunity(name, status, priority, estimated_value, proposal_deadline, 
         try:
             cursor = connection.cursor()
             query = """
-            INSERT INTO opportunities (name, status, priority, estimated_value, proposal_deadline, expected_close_date, contact_id, company_id, assigned_to)
+            INSERT INTO opportunities 
+            (name, status, priority, estimated_value, proposal_deadline, expected_close_date, contact_id, company_id, assigned_to) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """
             cursor.execute(query, (name, status, priority, estimated_value, proposal_deadline, expected_close_date, contact_id, company_id, assigned_to))
             connection.commit()
-            return True
+            return cursor.lastrowid
         except sqlite3.Error as e:
             print(f"Error adding opportunity: {e}")
-            return False
+            return None
         finally:
             connection.close()
-    return False
+    return None
 
 def get_all_opportunities(sort_by="o.name", order="ASC"):
     connection = get_connection()
@@ -110,3 +111,40 @@ def update_opportunity(opp_id, name, status, priority, estimated_value, proposal
         finally:
             connection.close()
     return False
+
+def link_product_to_opportunity(opp_id, product_id, quantity=1, price=0.0):
+    connection = get_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            query = "INSERT OR REPLACE INTO opportunity_products (opportunity_id, product_id, quantity, unit_price) VALUES (?, ?, ?, ?)"
+            cursor.execute(query, (opp_id, product_id, quantity, price))
+            connection.commit()
+            return True
+        finally:
+            connection.close()
+    return False
+
+def unlink_all_products_from_opportunity(opp_id):
+    connection = get_connection()
+    if connection:
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM opportunity_products WHERE opportunity_id = ?", (opp_id,))
+        connection.commit()
+        connection.close()
+
+def get_opportunity_products(opp_id):
+    connection = get_connection()
+    products = []
+    if connection:
+        cursor = connection.cursor()
+        query = """
+        SELECT p.id, p.name, op.quantity, op.unit_price 
+        FROM products p
+        JOIN opportunity_products op ON p.id = op.product_id
+        WHERE op.opportunity_id = ?
+        """
+        cursor.execute(query, (opp_id,))
+        products = cursor.fetchall()
+        connection.close()
+    return products

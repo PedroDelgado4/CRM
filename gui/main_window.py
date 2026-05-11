@@ -8,7 +8,7 @@ from gui.profile_view import ProfileView
 from core.contacts import get_today_reminders 
 from gui.opportunity_view import OpportunityView
 from gui.interaction_view import InteractionView
-
+from gui.finance_view import FinanceView
 class MainWindow(ctk.CTkFrame):
     def __init__(self, master, user_data):
         super().__init__(master)
@@ -139,7 +139,10 @@ class MainWindow(ctk.CTkFrame):
                self.opp_view.pack(fill="both", expand=True)
         elif view_name == "Interactions":
             self.int_view = InteractionView(self.content_frame, self.user_data)
-            self.int_view.pack(fill="both", expand=True)    
+            self.int_view.pack(fill="both", expand=True)
+        elif view_name == "Finances":
+            self.finance_view = FinanceView(self.content_frame, self.user_data)
+            self.finance_view.pack(fill="both", expand=True)    
         else:
             title = ctk.CTkLabel(self.content_frame, text=f"Viewing {view_name}", font=ctk.CTkFont(size=24))
             title.pack(pady=20)
