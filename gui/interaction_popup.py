@@ -1,4 +1,6 @@
 import customtkinter as ctk
+from datetime import datetime
+from tkcalendar import DateEntry
 from core.interactions import add_interaction, update_interaction, get_interaction_by_id, link_product_to_interaction, unlink_all_products_from_interaction, get_interaction_products
 from core.contacts import get_all_contacts
 from core.opportunities import get_all_opportunities
@@ -10,11 +12,11 @@ class AddInteractionWindow(ctk.CTkToplevel):
         super().__init__(parent)
         self.parent = parent
         self.interaction_id = interaction_id
-        self.product_checkboxes = {} # Diccionario para rastrear los productos seleccionados
+        self.product_checkboxes = {} 
         
         title_text = "Edit Interaction" if self.interaction_id else "Log Interaction"
         self.title(title_text)
-        self.geometry("550x850")
+        self.geometry("550x850") 
         self.attributes("-topmost", True)
         
         self.color_green = "#2E8D1B"
@@ -28,7 +30,6 @@ class AddInteractionWindow(ctk.CTkToplevel):
         self.opp_dict = {o[1]: o[0] for o in self.opp_data}
         opp_names = ["-- Select Opportunity (Optional) --"] + list(self.opp_dict.keys())
 
-        # --- MAPEO DE TIPOS Y ESTADOS ---
         self.type_map = {
             "Call": "call", "Email": "email", "Meeting": "meeting", 
             "Message": "message", "Other": "other"
@@ -37,7 +38,6 @@ class AddInteractionWindow(ctk.CTkToplevel):
             "Pending": "pending", "Completed": "completed", "Cancelled": "cancelled"
         }
 
-        # --- REJILLA PRINCIPAL ---
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
@@ -64,13 +64,22 @@ class AddInteractionWindow(ctk.CTkToplevel):
         self.status_var = ctk.StringVar(value="Completed")
         ctk.CTkOptionMenu(self.scroll_frame, variable=self.status_var, values=list(self.status_map.keys()), fg_color="#3F3F3F", button_color=self.color_green).grid(row=5, column=0, pady=8, sticky="ew")
 
-        self.reminder_entry = ctk.CTkEntry(self.scroll_frame, placeholder_text="Follow-up Date (DD/MM/YYYY)", height=35, border_color=self.color_green)
-        self.reminder_entry.grid(row=6, column=0, pady=(15, 8), sticky="ew")
+        # FECHA CON TKCALENDAR
+        ctk.CTkLabel(self.scroll_frame, text="Follow-up Date:").grid(row=6, column=0, pady=(10,0), sticky="w")
+        self.reminder_entry = DateEntry(
+            self.scroll_frame, width=20, 
+            background='#3F3F3F', foreground='white', borderwidth=0,
+            selectbackground=self.color_green, selectforeground='white',
+            normalbackground='#2b2b2b', normalforeground='white',
+            headersbackground='#3F3F3F', headersforeground='white',
+            date_pattern='yyyy-mm-dd'
+        )
+        self.reminder_entry.grid(row=7, column=0, pady=(0,8), sticky="w")
 
         # --- SECCIÓN PRODUCTOS TRATADOS ---
-        ctk.CTkLabel(self.scroll_frame, text="Products discussed:", font=ctk.CTkFont(weight="bold")).grid(row=7, column=0, pady=(15, 5), sticky="w")
+        ctk.CTkLabel(self.scroll_frame, text="Products discussed:", font=ctk.CTkFont(weight="bold")).grid(row=8, column=0, pady=(15, 5), sticky="w")
         self.prod_frame = ctk.CTkFrame(self.scroll_frame, fg_color="#2A2A2A")
-        self.prod_frame.grid(row=8, column=0, sticky="ew", pady=5)
+        self.prod_frame.grid(row=9, column=0, sticky="ew", pady=5)
         
         all_prods = get_all_products()
         for idx, p in enumerate(all_prods):
@@ -79,7 +88,6 @@ class AddInteractionWindow(ctk.CTkToplevel):
             cb.pack(anchor="w", padx=10, pady=5)
             self.product_checkboxes[p[0]] = var
 
-        # Botón Guardar
         btn_text = "Update Interaction" if self.interaction_id else "Save Interaction"
         self.save_btn = ctk.CTkButton(self, text=btn_text, fg_color=self.color_green, hover_color="#246B15", height=40, font=ctk.CTkFont(weight="bold"), command=self.save_data)
         self.save_btn.grid(row=2, column=0, pady=20, padx=40, sticky="ew")
@@ -106,9 +114,12 @@ class AddInteractionWindow(ctk.CTkToplevel):
                 if v == raw_int[2]: self.opp_var.set(k)
                 
         if raw_int[4]: self.notes_text.insert("1.0", raw_int[4])
-        if raw_int[7]: self.reminder_entry.insert(0, raw_int[7])
+        
+        if raw_int[7]:
+            try:
+                self.reminder_entry.set_date(datetime.strptime(raw_int[7], '%Y-%m-%d').date())
+            except ValueError: pass
 
-        # Marcar los productos previamente vinculados
         linked = get_interaction_products(self.interaction_id)
         linked_ids = [lp[0] for lp in linked]
         for p_id, var in self.product_checkboxes.items():
@@ -131,7 +142,8 @@ class AddInteractionWindow(ctk.CTkToplevel):
         opp_id = self.opp_dict.get(self.opp_var.get()) 
         db_type = self.type_map.get(self.type_var.get(), "call")
         db_status = self.status_map.get(self.status_var.get(), "completed")
-        reminder = self.reminder_entry.get()
+        
+        reminder = self.reminder_entry.get_date().strftime('%Y-%m-%d')
 
         if self.interaction_id:
             success = update_interaction(self.interaction_id, cont_id, opp_id, db_type, notes, db_status, reminder)
@@ -140,7 +152,6 @@ class AddInteractionWindow(ctk.CTkToplevel):
             saved_id = add_interaction(contact_id=cont_id, opportunity_id=opp_id, interaction_type=db_type, note=notes, status=db_status, reminder_date=reminder)
 
         if saved_id:
-            # Primero borramos vínculos viejos, luego creamos los nuevos
             unlink_all_products_from_interaction(saved_id)
             for p_id, var in self.product_checkboxes.items():
                 if var.get(): 

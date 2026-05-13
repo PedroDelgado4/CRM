@@ -1,4 +1,6 @@
 import customtkinter as ctk
+from datetime import datetime
+from tkcalendar import DateEntry
 from core.opportunities import add_opportunity, update_opportunity, get_opportunity_by_id, link_product_to_opportunity, unlink_all_products_from_opportunity, get_opportunity_products
 from core.contacts import get_all_contacts
 from core.companies import get_all_companies
@@ -80,17 +82,38 @@ class AddOpportunityWindow(ctk.CTkToplevel):
 
         # 4. Valor y Fechas
         self.value_entry = self.create_input(self.scroll_frame, "Estimated Value (€)", 5)
-        self.proposal_date_entry = self.create_input(self.scroll_frame, "Proposal Deadline (DD/MM/YYYY)", 6)
-        self.close_date_entry = self.create_input(self.scroll_frame, "Expected Close Date (DD/MM/YYYY)", 7)
+        
+        # FECHAS CON TKCALENDAR
+        ctk.CTkLabel(self.scroll_frame, text="Proposal Deadline:").grid(row=6, column=0, pady=(10,0), sticky="w")
+        self.proposal_date_entry = DateEntry(
+            self.scroll_frame, width=20, 
+            background='#3F3F3F', foreground='white', borderwidth=0,
+            selectbackground=self.color_green, selectforeground='white',
+            normalbackground='#2b2b2b', normalforeground='white',
+            headersbackground='#3F3F3F', headersforeground='white',
+            date_pattern='yyyy-mm-dd'
+        )
+        self.proposal_date_entry.grid(row=7, column=0, pady=(0,8), sticky="w")
+
+        ctk.CTkLabel(self.scroll_frame, text="Expected Close Date:").grid(row=8, column=0, pady=(10,0), sticky="w")
+        self.close_date_entry = DateEntry(
+            self.scroll_frame, width=20, 
+            background='#3F3F3F', foreground='white', borderwidth=0,
+            selectbackground=self.color_green, selectforeground='white',
+            normalbackground='#2b2b2b', normalforeground='white',
+            headersbackground='#3F3F3F', headersforeground='white',
+            date_pattern='yyyy-mm-dd'
+        )
+        self.close_date_entry.grid(row=9, column=0, pady=(0,8), sticky="w")
 
         # 5. Asignado a
         self.assign_var = ctk.StringVar(value="-- Unassigned --")
-        ctk.CTkOptionMenu(self.scroll_frame, variable=self.assign_var, values=user_names, fg_color="#3F3F3F", button_color=self.color_green).grid(row=8, column=0, pady=8, sticky="ew")
+        ctk.CTkOptionMenu(self.scroll_frame, variable=self.assign_var, values=user_names, fg_color="#3F3F3F", button_color=self.color_green).grid(row=10, column=0, pady=8, sticky="ew")
 
         # --- 6. SECCIÓN PRODUCTOS ---
-        ctk.CTkLabel(self.scroll_frame, text="Select Products/Services:", font=ctk.CTkFont(weight="bold")).grid(row=9, column=0, pady=(15, 5), sticky="w")
+        ctk.CTkLabel(self.scroll_frame, text="Select Products/Services:", font=ctk.CTkFont(weight="bold")).grid(row=11, column=0, pady=(15, 5), sticky="w")
         self.prod_frame = ctk.CTkFrame(self.scroll_frame, fg_color="#2A2A2A")
-        self.prod_frame.grid(row=10, column=0, sticky="ew", pady=5)
+        self.prod_frame.grid(row=12, column=0, sticky="ew", pady=5)
         
         all_prods = get_all_products()
         for idx, p in enumerate(all_prods):
@@ -124,8 +147,16 @@ class AddOpportunityWindow(ctk.CTkToplevel):
             if v == raw_opp[3]: self.priority_var.set(k)
             
         if raw_opp[5] is not None: self.value_entry.insert(0, str(raw_opp[5]))
-        if raw_opp[7]: self.proposal_date_entry.insert(0, raw_opp[7])
-        if raw_opp[8]: self.close_date_entry.insert(0, raw_opp[8])
+        
+        if raw_opp[7]: 
+            try:
+                self.proposal_date_entry.set_date(datetime.strptime(raw_opp[7], '%Y-%m-%d').date())
+            except ValueError: pass
+            
+        if raw_opp[8]: 
+            try:
+                self.close_date_entry.set_date(datetime.strptime(raw_opp[8], '%Y-%m-%d').date())
+            except ValueError: pass
         
         if raw_opp[11]: 
             for k, v in self.company_dict.items():
@@ -137,7 +168,6 @@ class AddOpportunityWindow(ctk.CTkToplevel):
             for k, v in self.user_dict.items():
                 if v == raw_opp[4]: self.assign_var.set(k)
 
-        # Marcar checkboxes de productos
         linked = get_opportunity_products(self.opp_id)
         linked_ids = [lp[0] for lp in linked]
         for p_id, (var, price) in self.product_checkboxes.items():
@@ -168,14 +198,15 @@ class AddOpportunityWindow(ctk.CTkToplevel):
         db_status = self.status_map.get(self.status_var.get(), "qualification")
         db_priority = self.priority_map.get(self.priority_var.get(), "medium")
 
-        # Guardar Oportunidad principal
+        proposal_date = self.proposal_date_entry.get_date().strftime('%Y-%m-%d')
+        close_date = self.close_date_entry.get_date().strftime('%Y-%m-%d')
+
         if self.opp_id:
-            success = update_opportunity(self.opp_id, name, db_status, db_priority, est_value, self.proposal_date_entry.get(), self.close_date_entry.get(), cont_id, comp_id, user_id)
+            success = update_opportunity(self.opp_id, name, db_status, db_priority, est_value, proposal_date, close_date, cont_id, comp_id, user_id)
             saved_opp_id = self.opp_id if success else None
         else:
-            saved_opp_id = add_opportunity(name, db_status, db_priority, est_value, self.proposal_date_entry.get(), self.close_date_entry.get(), cont_id, comp_id, user_id)
+            saved_opp_id = add_opportunity(name, db_status, db_priority, est_value, proposal_date, close_date, cont_id, comp_id, user_id)
 
-        # Guardar Relación de Productos
         if saved_opp_id:
             unlink_all_products_from_opportunity(saved_opp_id)
             for p_id, (var, price) in self.product_checkboxes.items():

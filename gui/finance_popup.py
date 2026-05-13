@@ -1,114 +1,92 @@
 import customtkinter as ctk
-from datetime import date
+from tkinter import messagebox
+from datetime import datetime
+from tkcalendar import DateEntry
 from core.finances import add_finance_entry, update_finance_entry, get_finance_by_id
 
-class AddFinanceWindow(ctk.CTkToplevel):
-    def __init__(self, parent, entry_id=None):
-        super().__init__(parent)
-        self.parent = parent
-        self.entry_id = entry_id
+class FinancePopup(ctk.CTkToplevel):
+    def __init__(self, master, refresh_callback, finance_id=None):
+        super().__init__(master)
+        self.refresh_callback = refresh_callback
+        self.finance_id = finance_id
         
-        title_text = "Edit Transaction" if self.entry_id else "New Transaction"
-        self.title(title_text)
-        self.geometry("400x450")
-        self.attributes("-topmost", True)
-        
-        self.color_green = "#2E8D1B"
-        self.color_brick = "#A52A2A"
+        title = "Edit Finance Record" if finance_id else "New Finance Record"
+        self.title(f"CRM FDT - {title}")
+        self.geometry("400x350")
+        self.grab_set()
 
-        self.grid_columnconfigure(0, weight=1)
+        self.bg_color = "#2b2b2b"
+        self.input_bg = "#3F3F3F"
+        self.green_accent = "#2E8D1B"
 
-        header_text = "Edit Finance Entry" if self.entry_id else "Log Finance Entry"
-        self.title_label = ctk.CTkLabel(self, text=header_text, font=ctk.CTkFont(size=20, weight="bold"), text_color=self.color_green)
-        self.title_label.grid(row=0, column=0, pady=(20, 10), sticky="ew")
+        form_frame = ctk.CTkFrame(self, fg_color="transparent")
+        form_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-        self.form_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.form_frame.grid(row=1, column=0, padx=40, sticky="nsew")
-        self.form_frame.grid_columnconfigure(0, weight=1)
+        # 1. Type
+        ctk.CTkLabel(form_frame, text="Type:").grid(row=0, column=0, padx=10, pady=10, sticky="e")
+        self.type_combo = ctk.CTkComboBox(form_frame, values=["income", "expense"], fg_color=self.input_bg, button_color=self.green_accent)
+        self.type_combo.grid(row=0, column=1, padx=10, pady=10, sticky="w")
 
-        # 1. Selector de Tipo (Income / Expense)
-        self.type_var = ctk.StringVar(value="income")
-        self.type_segmented = ctk.CTkSegmentedButton(
-            self.form_frame, 
-            values=["income", "expense"], 
-            variable=self.type_var, 
-            selected_color=self.color_green, 
-            selected_hover_color="#246B15",
-            command=self.update_segment_color
+        # 2. Amount
+        ctk.CTkLabel(form_frame, text="Amount (€):").grid(row=1, column=0, padx=10, pady=10, sticky="e")
+        self.amount_entry = ctk.CTkEntry(form_frame, fg_color=self.input_bg)
+        self.amount_entry.grid(row=1, column=1, padx=10, pady=10, sticky="w")
+
+        # 3. Description
+        ctk.CTkLabel(form_frame, text="Description:").grid(row=2, column=0, padx=10, pady=10, sticky="e")
+        self.desc_entry = ctk.CTkEntry(form_frame, fg_color=self.input_bg)
+        self.desc_entry.grid(row=2, column=1, padx=10, pady=10, sticky="w")
+
+        # 4. Date (tkcalendar DateEntry)
+        ctk.CTkLabel(form_frame, text="Date:").grid(row=3, column=0, padx=10, pady=10, sticky="e")
+        self.date_entry = DateEntry(
+            form_frame, width=20, 
+            background=self.input_bg, foreground='white', borderwidth=0,
+            selectbackground=self.green_accent, selectforeground='white',
+            normalbackground=self.bg_color, normalforeground='white',
+            headersbackground=self.input_bg, headersforeground='white',
+            date_pattern='yyyy-mm-dd'
         )
-        self.type_segmented.grid(row=0, column=0, pady=(10, 20), sticky="ew")
+        self.date_entry.grid(row=3, column=1, padx=10, pady=10, sticky="w")
 
-        # 2. Cantidad y Fecha
-        self.amount_entry = self.create_input(self.form_frame, "Amount (€) *", 1)
+        if self.finance_id:
+            self.load_data()
+
+        self.save_btn = ctk.CTkButton(self, text="Save", fg_color=self.green_accent, hover_color="#246B15", command=self.save_finance)
+        self.save_btn.pack(pady=10)
+
+    def load_data(self):
+        record = get_finance_by_id(self.finance_id)
+        if not record: return
         
-        self.date_entry = self.create_input(self.form_frame, "Date (YYYY-MM-DD)", 2)
-        # rellenamos la fecha de hoy por defecto
-        self.date_entry.insert(0, date.today().strftime("%Y-%m-%d"))
-
-        # 3. Descrip
-        self.desc_entry = self.create_input(self.form_frame, "Description / Concept *", 3)
-
-        btn_text = "Update Transaction" if self.entry_id else "Save Transaction"
-        self.save_btn = ctk.CTkButton(self, text=btn_text, fg_color=self.color_green, hover_color="#246B15", height=40, font=ctk.CTkFont(weight="bold"), command=self.save_data)
-        self.save_btn.grid(row=2, column=0, pady=30, padx=40, sticky="ew")
-
-        if self.entry_id:
-            self.populate_data()
-
-    def create_input(self, master, placeholder, row_idx):
-        entry = ctk.CTkEntry(master, placeholder_text=placeholder, height=35, border_color=self.color_green)
-        entry.grid(row=row_idx, column=0, pady=8, sticky="ew")
-        return entry
-
-    def update_segment_color(self, selected_val):
-        # rojo si es un gasto, verde si es ingreso
-        if selected_val == "expense":
-            self.type_segmented.configure(selected_color=self.color_brick, selected_hover_color="#7A1F1F")
-        else:
-            self.type_segmented.configure(selected_color=self.color_green, selected_hover_color="#246B15")
-
-    def populate_data(self):
-        raw_entry = get_finance_by_id(self.entry_id)
-        if not raw_entry: return
+        self.type_combo.set(record[1])
+        self.amount_entry.insert(0, str(record[2]))
+        if record[3]: self.desc_entry.insert(0, record[3])
         
-        # 0:id, 1:type, 2:amount, 3:description, 4:date
-        self.type_var.set(raw_entry[1])
-        self.update_segment_color(raw_entry[1])
-        
-        if raw_entry[2] is not None: self.amount_entry.insert(0, str(raw_entry[2]))
-        if raw_entry[3]: self.desc_entry.insert(0, raw_entry[3])
-        
-        if raw_entry[4]: 
-            self.date_entry.delete(0, 'end')
-            self.date_entry.insert(0, raw_entry[4])
+        if record[4]:
+            try:
+                self.date_entry.set_date(datetime.strptime(record[4], '%Y-%m-%d').date())
+            except ValueError: pass
 
-    def save_data(self):
-        val_raw = self.amount_entry.get().strip()
-        amount = 0.0
-        if not val_raw:
-            self.amount_entry.configure(border_color=self.color_brick)
-            return
-        try:
-            amount = float(val_raw.replace(",", "."))
-            self.amount_entry.configure(border_color=self.color_green)
-        except ValueError:
-            self.amount_entry.configure(border_color=self.color_brick)
-            return
-
+    def save_finance(self):
+        f_type = self.type_combo.get()
         desc = self.desc_entry.get().strip()
-        if not desc:
-            self.desc_entry.configure(border_color=self.color_brick)
+        
+        try:
+            amount = float(self.amount_entry.get() or 0)
+        except ValueError:
+            messagebox.showerror("Error", "Amount must be a valid number.")
             return
-        self.desc_entry.configure(border_color=self.color_green)
 
-        e_type = self.type_var.get()
-        e_date = self.date_entry.get().strip()
+        date_val = self.date_entry.get_date().strftime('%Y-%m-%d')
 
-        if self.entry_id:
-            success = update_finance_entry(self.entry_id, e_type, amount, desc, e_date)
+        if self.finance_id:
+            success = update_finance_entry(self.finance_id, f_type, amount, desc, date_val)
         else:
-            success = add_finance_entry(e_type, amount, desc, e_date)
+            success = add_finance_entry(f_type, amount, desc, date_val)
 
         if success:
-            self.parent.refresh_list()
+            self.refresh_callback()
             self.destroy()
+        else:
+            messagebox.showerror("Error", "Failed to save finance record.")

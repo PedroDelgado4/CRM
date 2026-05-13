@@ -2,7 +2,7 @@ import customtkinter as ctk
 import os
 from PIL import Image
 from core.finances import get_all_finances, search_finances, delete_finance, get_finance_summary
-from gui.finance_popup import AddFinanceWindow
+from gui.finance_popup import FinancePopup
 from core.csv_utils import export_table_to_csv
 
 class FinanceView(ctk.CTkFrame):
@@ -168,7 +168,7 @@ class FinanceView(ctk.CTkFrame):
 
     def open_add_finance_window(self, entry_id=None):
         if not hasattr(self, "add_win") or not self.add_win.winfo_exists():
-            self.add_win = AddFinanceWindow(self, entry_id)
+            self.add_win = FinancePopup(self, entry_id)
         self.add_win.focus()
 
     def remove_entry(self, entry_id):
