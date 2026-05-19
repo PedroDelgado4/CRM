@@ -48,8 +48,8 @@ class ContactView(ctk.CTkFrame):
                                     command=self.run_import)
         self.import_btn.pack(side="right", padx=5)
 
-        # CONFIGURACIÓN DE COLUMNAS
-        self.col_widths = [40, 160, 140, 180, 120, 120, 120, 100]
+        # CONFIGURACIÓN DE COLUMNAS (Ajustados los anchos para añadir OWNER)
+        self.col_widths = [40, 140, 120, 160, 110, 110, 100, 90, 100]
         self.headers_info = [
             ("", "c.is_vip"), 
             ("NAME", "c.full_name"), 
@@ -58,6 +58,7 @@ class ContactView(ctk.CTkFrame):
             ("PHONE", "c.phone"), 
             ("POSITION", "c.position"), 
             ("LINKEDIN", "c.linkedin"), 
+            ("OWNER", "u.username"), # NUEVA COLUMNA
             ("ACTIONS", None)
         ]
 
@@ -167,9 +168,13 @@ class ContactView(ctk.CTkFrame):
             li_lbl.grid(row=0, column=6, padx=5)
             if c[7]: li_lbl.bind("<Button-1>", lambda e, u=c[7]: self.open_link(u))
 
-            # Col 7: Acciones
-            actions = ctk.CTkFrame(row, fg_color="transparent", width=self.col_widths[7])
-            actions.grid(row=0, column=7, padx=5)
+            # Col 7: Owner 
+            owner_txt = c[8] if c[8] else "Unassigned"
+            ctk.CTkLabel(row, text=owner_txt, width=self.col_widths[7], anchor="center").grid(row=0, column=7, padx=5)
+
+            # Col 8: Acciones 
+            actions = ctk.CTkFrame(row, fg_color="transparent", width=self.col_widths[8])
+            actions.grid(row=0, column=8, padx=5)
             
             btn_container = ctk.CTkFrame(actions, fg_color="transparent")
             btn_container.pack(expand=True)
@@ -187,7 +192,7 @@ class ContactView(ctk.CTkFrame):
                 ctk.CTkButton(btn_container, text="", image=self.img_delete, width=28, height=28, fg_color=self.color_brick, hover_color="#7A1F1F",
                               command=lambda c_id=c[0]: self.remove_contact(c_id)).pack(side="left", padx=2)
 
-            # Liinea divisoria
+            # Linea divisoria
             ctk.CTkFrame(self.list_frame, height=1, fg_color="#2A2A2A").pack(fill="x", padx=10)
 
     def open_add_contact_window(self, contact_id=None):
@@ -204,14 +209,12 @@ class ContactView(ctk.CTkFrame):
         if delete_contact(contact_id): self.refresh_list()
 
     def run_import(self):
-        # Ejecuta la lógica de importación y refresca la tabla si ha habido éxito
         if import_contacts_csv():
             self.refresh_list()
 
     def run_export(self):
         from core.contacts import get_all_contacts
-        # Recuperamos los datos con la ordenación actual
         data = get_all_contacts(self.current_sort, self.sort_order)
-        # El SQL devuelve: id, full_name, company_name, is_vip, email, phone, position, linkedin, assigned_to
-        headers = ["ID", "Full Name", "Company", "VIP Status", "Email", "Phone", "Position", "LinkedIn", "Assigned User ID"]
+        # Cabecera actualizada para reflejar que ahora es Owner (Nombre del usuario)
+        headers = ["ID", "Full Name", "Company", "VIP Status", "Email", "Phone", "Position", "LinkedIn", "Owner"]
         export_table_to_csv(headers, data, "contacts_export")

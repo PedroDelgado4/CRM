@@ -27,10 +27,12 @@ def get_all_contacts(sort_by="c.full_name", order="ASC"):
     if connection:
         try:
             cursor = connection.cursor()
+            # MODIFICADO: Añadido u.username y el LEFT JOIN de users
             query = f"""
-            SELECT c.id, c.full_name, comp.name, c.is_vip, c.email, c.phone, c.position, c.linkedin, c.assigned_to
+            SELECT c.id, c.full_name, comp.name, c.is_vip, c.email, c.phone, c.position, c.linkedin, u.username
             FROM contacts c
             LEFT JOIN companies comp ON c.company_id = comp.id
+            LEFT JOIN users u ON c.assigned_to = u.id
             ORDER BY {sort_by} {order}
             """
             cursor.execute(query)
@@ -47,10 +49,12 @@ def search_contacts(term, sort_by="c.full_name", order="ASC"):
     if connection:
         try:
             cursor = connection.cursor()
+            # MODIFICADO: Añadido u.username y el LEFT JOIN de users
             query = f""" 
-            SELECT c.id, c.full_name, comp.name, c.is_vip, c.email, c.phone, c.position, c.linkedin, c.assigned_to 
+            SELECT c.id, c.full_name, comp.name, c.is_vip, c.email, c.phone, c.position, c.linkedin, u.username 
             FROM contacts c
             LEFT JOIN companies comp ON c.company_id = comp.id
+            LEFT JOIN users u ON c.assigned_to = u.id
             WHERE c.full_name LIKE ? OR comp.name LIKE ? 
             ORDER BY {sort_by} {order}
             """
@@ -88,16 +92,17 @@ def assign_responsable(contact_id, user_id):
         return True
     return False
 
-# MODIFICADO: Añadido sort_by y order
 def get_contacts_by_filter(is_vip=None, user_id=None, search_term=None, sort_by="c.full_name", order="ASC"):
     connection = get_connection()
     contacts = []
     if connection:
         cursor = connection.cursor()
+        # MODIFICADO: Añadido u.username y el LEFT JOIN de users
         query = """
-        SELECT c.id, c.full_name, comp.name, c.is_vip, c.email, c.phone, c.position, c.linkedin, c.assigned_to 
+        SELECT c.id, c.full_name, comp.name, c.is_vip, c.email, c.phone, c.position, c.linkedin, u.username 
         FROM contacts c
         LEFT JOIN companies comp ON c.company_id = comp.id
+        LEFT JOIN users u ON c.assigned_to = u.id
         WHERE 1=1
         """
         params = []
@@ -113,7 +118,6 @@ def get_contacts_by_filter(is_vip=None, user_id=None, search_term=None, sort_by=
             term = f"%{search_term}%"
             params.extend([term, term])
 
-        # Inyectamos el orden al final de la consulta
         query += f" ORDER BY {sort_by} {order}"
 
         try:
@@ -167,6 +171,7 @@ def get_contact_by_id(contact_id):
     contact = None
     if connection:
         cursor = connection.cursor()
+        # Se deja igual para no alterar la recolección del popup
         cursor.execute("SELECT * FROM contacts WHERE id = ?", (contact_id,))
         contact = cursor.fetchone()
         connection.close()
@@ -190,5 +195,4 @@ def update_contact(contact_id, full_name, company_id, is_vip, email, phone, posi
         finally:
             connection.close()
     return False
-
     
