@@ -1,21 +1,18 @@
-import sqlite3
+from core.database import get_connection
 
-conn = sqlite3.connect('crm_data.db')
-c = conn.cursor()
+def patch_database():
+    conn = get_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            # Añadimos la columna faltante a la tabla opportunities
+            cursor.execute("ALTER TABLE opportunities ADD COLUMN last_contact TEXT")
+            conn.commit()
+            print("✅ Columna 'last_contact' añadida con éxito a la base de datos.")
+        except Exception as e:
+            print(f"Error (o la columna ya existía): {e}")
+        finally:
+            conn.close()
 
-# Borramos la tabla defectuosa y la recreamos con todas las columnas
-c.execute("DROP TABLE IF EXISTS opportunity_products;")
-c.execute("""
-CREATE TABLE opportunity_products (
-    opportunity_id INTEGER,
-    product_id INTEGER,
-    quantity INTEGER DEFAULT 1,
-    unit_price REAL,
-    FOREIGN KEY (opportunity_id) REFERENCES opportunities (id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
-    PRIMARY KEY (opportunity_id, product_id)
-)
-""")
-conn.commit()
-conn.close()
-print("¡Tabla opportunity_products arreglada!")
+if __name__ == "__main__":
+    patch_database()

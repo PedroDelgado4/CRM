@@ -23,7 +23,7 @@ class OpportunityView(ctk.CTkFrame):
         self.load_images()
 
         # CONFIGURACIÓN DE COLUMNAS
-        self.col_widths = [180, 160, 120, 100, 100, 110, 100, 80]
+        self.col_widths = [170, 150, 110, 90, 90, 90, 90, 90, 80]
         self.headers_info = [
             ("OPP NAME", "o.name"), 
             ("CLIENT", "c.full_name"), 
@@ -31,6 +31,7 @@ class OpportunityView(ctk.CTkFrame):
             ("PRIORITY", "o.priority"), 
             ("VALUE (€)", "o.estimated_value"), 
             ("CLOSE DATE", "o.expected_close_date"), 
+            ("LAST CONTACT", "o.last_contact"),
             ("OWNER", "u.username"),
             ("ACTIONS", None)
         ]
@@ -43,6 +44,18 @@ class OpportunityView(ctk.CTkFrame):
                                         width=300, border_color=self.color_green)
         self.search_entry.pack(side="left", padx=5)
         self.search_entry.bind("<KeyRelease>", lambda e: self.refresh_list())
+
+        self.status_filter_var = ctk.StringVar(value="All Statuses")
+        self.status_filter_combo = ctk.CTkComboBox(
+            self.toolbar, 
+            variable=self.status_filter_var, 
+            values=["All Statuses", "Qualification", "Proposal", "Evaluation", "Negotiation", "Closed Won", "Closed Lost"],
+            width=150,
+            fg_color="#3F3F3F",
+            button_color=self.color_green,
+            command=lambda e: self.refresh_list() # Recarga la lista al cambiar
+        )
+        self.status_filter_combo.pack(side="left", padx=5)
 
         self.add_btn = ctk.CTkButton(self.toolbar, text="+ New Opportunity", width=140, 
                                     fg_color=self.color_green, hover_color="#246B15",
@@ -128,7 +141,6 @@ class OpportunityView(ctk.CTkFrame):
         return colors.get(priority, self.color_silver)
 
     def format_text(self, text):
-        # Formatea textos como 'closed_won' a 'Closed Won'
         if not text: return "-"
         return text.replace("_", " ").title()
 
@@ -136,14 +148,29 @@ class OpportunityView(ctk.CTkFrame):
         for widget in self.list_frame.winfo_children(): widget.destroy()
         
         term = self.search_entry.get()
-        # SQL devuelve: 0:id, 1:name, 2:status, 3:priority, 4:value, 5:proposal_date, 6:close_date, 7:contact, 8:company, 9:user
-        opps = search_opportunities(term, self.current_sort, self.sort_order) if term else get_all_opportunities(self.current_sort, self.sort_order)
+        
+        raw_filter = self.status_filter_var.get()
+        db_filter_map = {
+            "All Statuses": "All",
+            "Qualification": "qualification",
+            "Proposal": "proposal",
+            "Evaluation": "evaluation",
+            "Negotiation": "negotiation",
+            "Closed Won": "closed_won",
+            "Closed Lost": "closed_lost"
+        }
+        status_val = db_filter_map.get(raw_filter, "All")
+
+        if term:
+            opps = search_opportunities(term, self.current_sort, self.sort_order, status_val)
+        else:
+            opps = get_all_opportunities(self.current_sort, self.sort_order, status_val)
+
 
         for r_idx, o in enumerate(opps):
             row = ctk.CTkFrame(self.list_frame, height=45, corner_radius=0, fg_color="transparent")
             row.pack(fill="x", pady=1)
 
-            # FORZAMOS LA REJILLA AQUÍ TAMBIÉN
             for col_idx, width in enumerate(self.col_widths):
                 row.grid_columnconfigure(col_idx, minsize=width, weight=0)
             
@@ -152,8 +179,7 @@ class OpportunityView(ctk.CTkFrame):
             prod_names = ", ".join([p[1] for p in linked_products]) if linked_products else "No products linked"
             if len(prod_names) > 40: prod_names = prod_names[:37] + "..."
 
-            # Col 0: Opp Name + Productos vinculados debajo
-            # BLOQUEO DE TAMAÑO EN EL NOMBRE
+            # Col 0: Opp Name
             name_container = ctk.CTkFrame(row, fg_color="transparent", width=self.col_widths[0], height=40)
             name_container.pack_propagate(False)
             name_container.grid(row=0, column=0, padx=5, sticky="ew")
@@ -182,14 +208,16 @@ class OpportunityView(ctk.CTkFrame):
             # Col 5: Close Date
             ctk.CTkLabel(row, text=o[6] or "-", width=self.col_widths[5], anchor="center").grid(row=0, column=5, padx=5)
 
-            # Col 6: Owner
-            ctk.CTkLabel(row, text=o[9] or "Unassigned", width=self.col_widths[6], anchor="center").grid(row=0, column=6, padx=5)
+            # Col 6: Last Contact
+            ctk.CTkLabel(row, text=o[10] or "Never", width=self.col_widths[6], anchor="center").grid(row=0, column=6, padx=5)
 
-            # Col 7: Actions
-            # BLOQUEO DE TAMAÑO EN ACCIONES
-            actions = ctk.CTkFrame(row, fg_color="transparent", width=self.col_widths[7], height=35)
+            # Col 7: Owner
+            ctk.CTkLabel(row, text=o[9] or "Unassigned", width=self.col_widths[7], anchor="center").grid(row=0, column=7, padx=5)
+
+            # Col 8: Actions
+            actions = ctk.CTkFrame(row, fg_color="transparent", width=self.col_widths[8], height=35)
             actions.pack_propagate(False)
-            actions.grid(row=0, column=7, padx=5)
+            actions.grid(row=0, column=8, padx=5)
             
             btn_container = ctk.CTkFrame(actions, fg_color="transparent")
             btn_container.pack(expand=True)
@@ -215,5 +243,6 @@ class OpportunityView(ctk.CTkFrame):
     def run_export(self):
         from core.opportunities import get_all_opportunities
         data = get_all_opportunities(self.current_sort, self.sort_order)
-        headers = ["ID", "Opportunity Name", "Status", "Priority", "Value", "Proposal Date", "Close Date", "Contact ID", "Company ID", "Assigned To"]
+        # Añadida la nueva columna Last Contact al exportador CSV
+        headers = ["ID", "Opportunity Name", "Status", "Priority", "Value", "Proposal Date", "Close Date", "Contact Name", "Company Name", "Assigned To", "Last Contact"]
         export_table_to_csv(headers, data, "opportunities_export")

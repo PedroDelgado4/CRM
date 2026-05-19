@@ -111,7 +111,7 @@ def import_products_csv():
                 except ValueError:
                     price = 0.0
                     
-                # Campos críticos: forzamos mayúsculas o capitalización según la lógica de la BD
+                # forzamos mayúsculas o capitalización según la lógica de la db
                 billing_model = row.get("billing_model", "Single Payment").strip().title()
                 status = row.get("status", "ACTIVE").strip().title()
                 product_url = row.get("product_url", "").strip().lower()

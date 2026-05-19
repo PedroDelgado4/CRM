@@ -1,9 +1,9 @@
 import customtkinter as ctk
-from datetime import datetime
+from datetime import datetime, date
 from tkcalendar import DateEntry
 from core.interactions import add_interaction, update_interaction, get_interaction_by_id, link_product_to_interaction, unlink_all_products_from_interaction, get_interaction_products
 from core.contacts import get_all_contacts
-from core.opportunities import get_all_opportunities
+from core.opportunities import get_all_opportunities, update_last_contact_date
 from core.products import get_all_products
 from gui.alerts import show_alert
 
@@ -149,13 +149,18 @@ class AddInteractionWindow(ctk.CTkToplevel):
             success = update_interaction(self.interaction_id, cont_id, opp_id, db_type, notes, db_status, reminder)
             saved_id = self.interaction_id if success else None
         else:
-            saved_id = add_interaction(contact_id=cont_id, opportunity_id=opp_id, interaction_type=db_type, note=notes, status=db_status, reminder_date=reminder)
+            saved_id = add_interaction(contact_id=cont_id, opportunity_id=opp_id, type=db_type, note=notes, status=db_status, reminder_date=reminder)
 
         if saved_id:
             unlink_all_products_from_interaction(saved_id)
             for p_id, var in self.product_checkboxes.items():
                 if var.get(): 
                     link_product_to_interaction(saved_id, p_id)
+            
+            # --- ÚLTIMO CONTACTO ---
+            if opp_id: # Si la interacción se vinculó a una Oportunidad
+                today_str = date.today().strftime('%Y-%m-%d')
+                update_last_contact_date(opp_id, today_str)
             
             self.parent.refresh_list()
             self.destroy()

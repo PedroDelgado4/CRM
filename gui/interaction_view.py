@@ -54,6 +54,18 @@ class InteractionView(ctk.CTkFrame):
                                     command=self.run_export)
         self.export_btn.pack(side="right", padx=5)
 
+        self.type_filter_var = ctk.StringVar(value="All Types")
+        self.type_filter_combo = ctk.CTkComboBox(
+            self.toolbar, 
+            variable=self.type_filter_var, 
+            values=["All Types", "Call", "Email", "Meeting", "Message", "Other"],
+            width=150,
+            fg_color="#3F3F3F",
+            button_color=self.color_green,
+            command=lambda e: self.refresh_list()
+        )
+        self.type_filter_combo.pack(side="left", padx=5)
+
         # CABECERA
         self.header_frame = ctk.CTkFrame(self, height=35, corner_radius=0, fg_color=self.color_header)
         self.header_frame.pack(fill="x", padx=10)
@@ -123,14 +135,29 @@ class InteractionView(ctk.CTkFrame):
         for widget in self.list_frame.winfo_children(): widget.destroy()
         
         term = self.search_entry.get()
-        # SQL devuelve: 0:id, 1:note, 2:type, 3:date_time, 4:status, 5:reminder, 6:contact_name, 7:opp_name
-        interactions = search_interactions(term, self.current_sort, self.sort_order) if term else get_all_interactions(self.current_sort, self.sort_order)
+        
+        # Mapeo del filtro
+        raw_filter = self.type_filter_var.get()
+        db_filter_map = {
+            "All Types": "All",
+            "Call": "call",
+            "Email": "email",
+            "Meeting": "meeting",
+            "Message": "message",
+            "Other": "other"
+        }
+        type_val = db_filter_map.get(raw_filter, "All")
+
+        if term:
+            interactions = search_interactions(term, self.current_sort, self.sort_order, type_val)
+        else:
+            interactions = get_all_interactions(self.current_sort, self.sort_order, type_val)
 
         for r_idx, i in enumerate(interactions):
             row = ctk.CTkFrame(self.list_frame, height=45, corner_radius=0, fg_color="transparent")
             row.pack(fill="x", pady=1)
 
-            # FORZAMOS LA REJILLA: Cada columna tendrá exactamente el ancho de la cabecera
+            # Cada columna tendrá exactamente el ancho de la cabecera
             for col_idx, width in enumerate(self.col_widths):
                 row.grid_columnconfigure(col_idx, minsize=width, weight=0)
             

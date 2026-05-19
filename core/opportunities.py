@@ -21,50 +21,87 @@ def add_opportunity(name, status, priority, estimated_value, proposal_deadline, 
             connection.close()
     return None
 
-def get_all_opportunities(sort_by="o.name", order="ASC"):
+def get_all_opportunities(sort_by="o.name", order="ASC", status_filter=None):
+    from core.database import get_connection
     connection = get_connection()
     opps = []
     if connection:
-        try:
-            cursor = connection.cursor()
-            query = f"""
-            SELECT o.id, o.name, o.status, o.priority, o.estimated_value, o.proposal_deadline, o.expected_close_date, c.full_name, comp.name, u.username
-            FROM opportunities o
-            LEFT JOIN contacts c ON o.contact_id = c.id
-            LEFT JOIN companies comp ON o.company_id = comp.id
-            LEFT JOIN users u ON o.assigned_to = u.id
-            ORDER BY {sort_by} {order}
-            """
-            cursor.execute(query)
-            opps = cursor.fetchall()
-        except sqlite3.Error as e:
-            print(f"Error fetching opportunities: {e}")
-        finally:
-            connection.close()
+        cursor = connection.cursor()
+        query = """
+        SELECT o.id, o.name, o.status, o.priority, o.estimated_value, 
+               o.proposal_deadline, o.expected_close_date, 
+               c.full_name, comp.name, u.username
+        FROM opportunities o
+        LEFT JOIN contacts c ON o.contact_id = c.id
+        LEFT JOIN companies comp ON o.company_id = comp.id
+        LEFT JOIN users u ON o.assigned_to = u.id
+        """
+        params = []
+        
+        # Inyectamos el filtro si existe y no es "All"
+        if status_filter and status_filter != "All":
+            query += " WHERE o.status = ?"
+            params.append(status_filter)
+            
+        query += f" ORDER BY {sort_by} {order}"
+        cursor.execute(query, tuple(params))
+        opps = cursor.fetchall()
+        connection.close()
     return opps
 
-def search_opportunities(term, sort_by="o.name", order="ASC"):
+def get_all_opportunities(sort_by="o.name", order="ASC", status_filter=None):
+    from core.database import get_connection
     connection = get_connection()
     opps = []
     if connection:
-        try:
-            cursor = connection.cursor()
-            query = f"""
-            SELECT o.id, o.name, o.status, o.priority, o.estimated_value, o.proposal_deadline, o.expected_close_date, c.full_name, comp.name, u.username
-            FROM opportunities o
-            LEFT JOIN contacts c ON o.contact_id = c.id
-            LEFT JOIN companies comp ON o.company_id = comp.id
-            LEFT JOIN users u ON o.assigned_to = u.id
-            WHERE o.name LIKE ? OR c.full_name LIKE ? OR comp.name LIKE ? OR o.status LIKE ?
-            ORDER BY {sort_by} {order}
-            """
-            like_term = f"%{term}%"
-            cursor.execute(query, (like_term, like_term, like_term, like_term))
-            opps = cursor.fetchall()
-        except sqlite3.Error as e:
-            print(f"Error searching opportunities: {e}")
-        finally:
-            connection.close()
+        cursor = connection.cursor()
+        query = """
+        SELECT o.id, o.name, o.status, o.priority, o.estimated_value, 
+               o.proposal_deadline, o.expected_close_date, 
+               c.full_name, comp.name, u.username, o.last_contact 
+        FROM opportunities o
+        LEFT JOIN contacts c ON o.contact_id = c.id
+        LEFT JOIN companies comp ON o.company_id = comp.id
+        LEFT JOIN users u ON o.assigned_to = u.id
+        """
+        params = []
+        if status_filter and status_filter != "All":
+            query += " WHERE o.status = ?"
+            params.append(status_filter)
+            
+        query += f" ORDER BY {sort_by} {order}"
+        cursor.execute(query, tuple(params))
+        opps = cursor.fetchall()
+        connection.close()
+    return opps
+
+def search_opportunities(term, sort_by="o.name", order="ASC", status_filter=None):
+    from core.database import get_connection
+    connection = get_connection()
+    opps = []
+    if connection:
+        cursor = connection.cursor()
+        query = """
+        SELECT o.id, o.name, o.status, o.priority, o.estimated_value, 
+               o.proposal_deadline, o.expected_close_date, 
+               c.full_name, comp.name, u.username, o.last_contact
+        FROM opportunities o
+        LEFT JOIN contacts c ON o.contact_id = c.id
+        LEFT JOIN companies comp ON o.company_id = comp.id
+        LEFT JOIN users u ON o.assigned_to = u.id
+        WHERE (o.name LIKE ? OR comp.name LIKE ? OR c.full_name LIKE ?)
+        """
+        like_term = f"%{term}%"
+        params = [like_term, like_term, like_term]
+
+        if status_filter and status_filter != "All":
+            query += " AND o.status = ?"
+            params.append(status_filter)
+            
+        query += f" ORDER BY {sort_by} {order}"
+        cursor.execute(query, tuple(params))
+        opps = cursor.fetchall()
+        connection.close()
     return opps
 
 def delete_opportunity(opp_id):
@@ -148,3 +185,20 @@ def get_opportunity_products(opp_id):
         products = cursor.fetchall()
         connection.close()
     return products
+
+def update_last_contact_date(opportunity_id, date_str):
+    from core.database import get_connection
+    connection = get_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            # Asumiendo que la columna en tu BD se llama 'last_contact'
+            cursor.execute("UPDATE opportunities SET last_contact = ? WHERE id = ?", (date_str, opportunity_id))
+            connection.commit()
+            return True
+        except Exception as e:
+            print(f"Error updating last contact: {e}")
+            return False
+        finally:
+            connection.close()
+    return False

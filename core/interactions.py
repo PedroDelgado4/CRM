@@ -1,7 +1,7 @@
 import sqlite3
 from core.database import get_connection
 
-def add_interaction(contact_id, opportunity_id, interaction_type, note, status, reminder_date):
+def add_interaction(contact_id, opportunity_id, type, note, status, reminder_date):
     connection = get_connection()
     if connection:
         try:
@@ -11,7 +11,7 @@ def add_interaction(contact_id, opportunity_id, interaction_type, note, status, 
             INSERT INTO interactions (contact_id, opportunity_id, type, note, status, reminder_date)
             VALUES (?, ?, ?, ?, ?, ?)
             """
-            cursor.execute(query, (contact_id, opportunity_id, interaction_type, note, status, reminder_date))
+            cursor.execute(query, (contact_id, opportunity_id, type, note, status, reminder_date))
             connection.commit()
             return cursor.lastrowid
         except sqlite3.Error as e:
@@ -21,50 +21,55 @@ def add_interaction(contact_id, opportunity_id, interaction_type, note, status, 
             connection.close()
     return False
 
-def get_all_interactions(sort_by="i.date_time", order="DESC"):
-    # Por defecto ordenamos por fecha descendente (las más nuevas primero)
+def get_all_interactions(sort_by="i.id", order="DESC", type_filter=None):
+    from core.database import get_connection
     connection = get_connection()
     interactions = []
     if connection:
-        try:
-            cursor = connection.cursor()
-            query = f"""
-            SELECT i.id, i.note, i.type, i.date_time, i.status, i.reminder_date, c.full_name, o.name
-            FROM interactions i
-            LEFT JOIN contacts c ON i.contact_id = c.id
-            LEFT JOIN opportunities o ON i.opportunity_id = o.id
-            ORDER BY {sort_by} {order}
-            """
-            cursor.execute(query)
-            interactions = cursor.fetchall()
-        except sqlite3.Error as e:
-            print(f"Error fetching interactions: {e}")
-        finally:
-            connection.close()
+        cursor = connection.cursor()
+        query = """
+        SELECT i.id, i.note, i.type, i.date_time, i.status, i.reminder_date,
+               c.full_name, o.name
+        FROM interactions i
+        LEFT JOIN contacts c ON i.contact_id = c.id
+        LEFT JOIN opportunities o ON i.opportunity_id = o.id
+        """
+        params = []
+        if type_filter and type_filter != "All":
+            query += " WHERE i.type = ?"
+            params.append(type_filter)
+            
+        query += f" ORDER BY {sort_by} {order}"
+        cursor.execute(query, tuple(params))
+        interactions = cursor.fetchall()
+        connection.close()
     return interactions
 
-def search_interactions(term, sort_by="i.date_time", order="DESC"):
+def search_interactions(term, sort_by="i.id", order="DESC", type_filter=None):
+    from core.database import get_connection
     connection = get_connection()
     interactions = []
     if connection:
-        try:
-            cursor = connection.cursor()
-            # busca en la nota, el tipo, el estado, el nombre del contacto o de la oportunidad
-            query = f"""
-            SELECT i.id, i.note, i.type, i.date_time, i.status, i.reminder_date, c.full_name, o.name
-            FROM interactions i
-            LEFT JOIN contacts c ON i.contact_id = c.id
-            LEFT JOIN opportunities o ON i.opportunity_id = o.id
-            WHERE i.note LIKE ? OR i.type LIKE ? OR i.status LIKE ? OR c.full_name LIKE ? OR o.name LIKE ?
-            ORDER BY {sort_by} {order}
-            """
-            like_term = f"%{term}%"
-            cursor.execute(query, (like_term, like_term, like_term, like_term, like_term))
-            interactions = cursor.fetchall()
-        except sqlite3.Error as e:
-            print(f"Error searching interactions: {e}")
-        finally:
-            connection.close()
+        cursor = connection.cursor()
+        query = """
+        SELECT i.id, i.note, i.type, i.date_time, i.status, i.reminder_date,
+               c.full_name, o.name
+        FROM interactions i
+        LEFT JOIN contacts c ON i.contact_id = c.id
+        LEFT JOIN opportunities o ON i.opportunity_id = o.id
+        WHERE (i.note LIKE ? OR c.full_name LIKE ? OR o.name LIKE ?)
+        """
+        like_term = f"%{term}%"
+        params = [like_term, like_term, like_term]
+
+        if type_filter and type_filter != "All":
+            query += " AND i.type = ?"
+            params.append(type_filter)
+            
+        query += f" ORDER BY {sort_by} {order}"
+        cursor.execute(query, tuple(params))
+        interactions = cursor.fetchall()
+        connection.close()
     return interactions
 
 def delete_interaction(interaction_id):
@@ -92,7 +97,7 @@ def get_interaction_by_id(interaction_id):
         connection.close()
     return interaction
 
-def update_interaction(interaction_id, contact_id, opportunity_id, interaction_type, note, status, reminder_date):
+def update_interaction(interaction_id, contact_id, opportunity_id, type, note, status, reminder_date):
     connection = get_connection()
     if connection:
         try:
@@ -102,7 +107,7 @@ def update_interaction(interaction_id, contact_id, opportunity_id, interaction_t
             SET contact_id=?, opportunity_id=?, type=?, note=?, status=?, reminder_date=?
             WHERE id=?
             """
-            cursor.execute(query, (contact_id, opportunity_id, interaction_type, note, status, reminder_date, interaction_id))
+            cursor.execute(query, (contact_id, opportunity_id, type, note, status, reminder_date, interaction_id))
             connection.commit()
             return True
         except sqlite3.Error as e:
