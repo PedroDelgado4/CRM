@@ -112,7 +112,9 @@ class ProductView(ctk.CTkFrame):
         products = search_products(term, self.current_sort, self.sort_order) if term else get_all_products(self.current_sort, self.sort_order)
         
         for r_idx, p in enumerate(products):
-            row = ctk.CTkFrame(self.list_frame, height=40, corner_radius=0, fg_color="transparent")
+            bg_color = "#151515" if r_idx % 2 == 0 else "#1E1E1E"
+            
+            row = ctk.CTkFrame(self.list_frame, height=40, corner_radius=0, fg_color=bg_color)
             row.pack(fill="x", pady=1)
 
             ctk.CTkLabel(row, text=p[1], width=self.col_widths[0], anchor="center", font=ctk.CTkFont(weight="bold"), text_color=self.color_green).grid(row=0, column=0, padx=5)

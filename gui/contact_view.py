@@ -133,9 +133,13 @@ class ContactView(ctk.CTkFrame):
         # Llamada modificada para incluir ordenación
         contacts = get_contacts_by_filter(search_term=search_term, sort_by=self.current_sort, order=self.sort_order)
 
-        for c in contacts:
-            row = ctk.CTkFrame(self.list_frame, height=40, corner_radius=0, fg_color="transparent")
+        for r_idx, c in enumerate(contacts):
+            # Definimos el color cebra
+            bg_color = "#151515" if r_idx % 2 == 0 else "#1E1E1E"
+            
+            row = ctk.CTkFrame(self.list_frame, height=40, corner_radius=0, fg_color=bg_color)
             row.pack(fill="x", pady=1)
+            
             
             # Col 0: VIP
             vip_icon = self.img_star if c[3] == 1 else None

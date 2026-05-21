@@ -19,7 +19,12 @@ class AddInteractionWindow(ctk.CTkToplevel):
         self.geometry("550x850") 
         self.attributes("-topmost", True)
         
-        self.color_green = "#2E8D1B"
+        # --- COLORES NEON NIGHT ---
+        self.configure(fg_color="#050505")
+        self.color_neon = "#DEFF9A"
+        self.color_error = "#ff4d4d"
+        self.bg_input = "#0A0A0A"
+        self.border_input = "#333333"
 
         # --- CARGA DE DATOS RELACIONALES ---
         self.contact_data = get_all_contacts(sort_by="c.full_name", order="ASC")
@@ -41,7 +46,8 @@ class AddInteractionWindow(ctk.CTkToplevel):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        self.title_label = ctk.CTkLabel(self, text=title_text, font=ctk.CTkFont(size=20, weight="bold"), text_color=self.color_green)
+        header_text = "EDIT INTERACTION" if self.interaction_id else "LOG INTERACTION"
+        self.title_label = ctk.CTkLabel(self, text=header_text, font=ctk.CTkFont(size=20, weight="bold"), text_color=self.color_neon)
         self.title_label.grid(row=0, column=0, pady=(20, 10), sticky="ew")
 
         self.scroll_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
@@ -49,47 +55,47 @@ class AddInteractionWindow(ctk.CTkToplevel):
         self.scroll_frame.grid_columnconfigure(0, weight=1)
 
         self.type_var = ctk.StringVar(value="Call")
-        ctk.CTkOptionMenu(self.scroll_frame, variable=self.type_var, values=list(self.type_map.keys()), fg_color="#3F3F3F", button_color=self.color_green).grid(row=0, column=0, pady=8, sticky="ew")
+        ctk.CTkOptionMenu(self.scroll_frame, variable=self.type_var, values=list(self.type_map.keys()), fg_color=self.bg_input, button_color=self.color_neon, button_hover_color="#bde072", text_color="white", dropdown_fg_color="#151515").grid(row=0, column=0, pady=8, sticky="ew")
 
         self.contact_var = ctk.StringVar(value="-- Select Contact --")
-        ctk.CTkOptionMenu(self.scroll_frame, variable=self.contact_var, values=contact_names, fg_color="#3F3F3F", button_color=self.color_green).grid(row=1, column=0, pady=8, sticky="ew")
+        ctk.CTkOptionMenu(self.scroll_frame, variable=self.contact_var, values=contact_names, fg_color=self.bg_input, button_color=self.color_neon, button_hover_color="#bde072", text_color="white", dropdown_fg_color="#151515").grid(row=1, column=0, pady=8, sticky="ew")
 
         self.opp_var = ctk.StringVar(value="-- Select Opportunity (Optional) --")
-        ctk.CTkOptionMenu(self.scroll_frame, variable=self.opp_var, values=opp_names, fg_color="#3F3F3F", button_color=self.color_green).grid(row=2, column=0, pady=8, sticky="ew")
+        ctk.CTkOptionMenu(self.scroll_frame, variable=self.opp_var, values=opp_names, fg_color=self.bg_input, button_color=self.color_neon, button_hover_color="#bde072", text_color="white", dropdown_fg_color="#151515").grid(row=2, column=0, pady=8, sticky="ew")
 
-        ctk.CTkLabel(self.scroll_frame, text="Interaction Notes *", anchor="w").grid(row=3, column=0, pady=(15, 0), sticky="w")
-        self.notes_text = ctk.CTkTextbox(self.scroll_frame, height=120, border_width=2, border_color=self.color_green)
+        ctk.CTkLabel(self.scroll_frame, text="Interaction Notes *", anchor="w", text_color="white").grid(row=3, column=0, pady=(15, 0), sticky="w")
+        self.notes_text = ctk.CTkTextbox(self.scroll_frame, height=120, fg_color=self.bg_input, border_width=1, border_color=self.border_input, text_color="white")
         self.notes_text.grid(row=4, column=0, pady=5, sticky="ew")
 
         self.status_var = ctk.StringVar(value="Completed")
-        ctk.CTkOptionMenu(self.scroll_frame, variable=self.status_var, values=list(self.status_map.keys()), fg_color="#3F3F3F", button_color=self.color_green).grid(row=5, column=0, pady=8, sticky="ew")
+        ctk.CTkOptionMenu(self.scroll_frame, variable=self.status_var, values=list(self.status_map.keys()), fg_color=self.bg_input, button_color=self.color_neon, button_hover_color="#bde072", text_color="white", dropdown_fg_color="#151515").grid(row=5, column=0, pady=8, sticky="ew")
 
         # FECHA CON TKCALENDAR
-        ctk.CTkLabel(self.scroll_frame, text="Follow-up Date:").grid(row=6, column=0, pady=(10,0), sticky="w")
+        ctk.CTkLabel(self.scroll_frame, text="Follow-up Date:", text_color="white").grid(row=6, column=0, pady=(10,0), sticky="w")
         self.reminder_entry = DateEntry(
             self.scroll_frame, width=20, 
-            background='#3F3F3F', foreground='white', borderwidth=0,
-            selectbackground=self.color_green, selectforeground='white',
-            normalbackground='#2b2b2b', normalforeground='white',
-            headersbackground='#3F3F3F', headersforeground='white',
+            background=self.bg_input, foreground='white', borderwidth=0,
+            selectbackground=self.color_neon, selectforeground='black',
+            normalbackground=self.bg_input, normalforeground='white',
+            headersbackground='#151515', headersforeground='white',
             date_pattern='yyyy-mm-dd'
         )
         self.reminder_entry.grid(row=7, column=0, pady=(0,8), sticky="w")
 
         # --- SECCIÓN PRODUCTOS TRATADOS ---
-        ctk.CTkLabel(self.scroll_frame, text="Products discussed:", font=ctk.CTkFont(weight="bold")).grid(row=8, column=0, pady=(15, 5), sticky="w")
-        self.prod_frame = ctk.CTkFrame(self.scroll_frame, fg_color="#2A2A2A")
+        ctk.CTkLabel(self.scroll_frame, text="Products discussed:", font=ctk.CTkFont(weight="bold"), text_color="white").grid(row=8, column=0, pady=(15, 5), sticky="w")
+        self.prod_frame = ctk.CTkFrame(self.scroll_frame, fg_color="#151515", border_width=1, border_color="#333")
         self.prod_frame.grid(row=9, column=0, sticky="ew", pady=5)
         
         all_prods = get_all_products()
         for idx, p in enumerate(all_prods):
             var = ctk.BooleanVar(value=False)
-            cb = ctk.CTkCheckBox(self.prod_frame, text=p[1], variable=var, text_color="white", fg_color=self.color_green, hover_color="#246B15", border_color=self.color_green)
-            cb.pack(anchor="w", padx=10, pady=5)
+            cb = ctk.CTkCheckBox(self.prod_frame, text=p[1], variable=var, text_color="white", fg_color=self.color_neon, checkmark_color="black", hover_color="#bde072", border_color="#555")
+            cb.pack(anchor="w", padx=10, pady=10)
             self.product_checkboxes[p[0]] = var
 
-        btn_text = "Update Interaction" if self.interaction_id else "Save Interaction"
-        self.save_btn = ctk.CTkButton(self, text=btn_text, fg_color=self.color_green, hover_color="#246B15", height=40, font=ctk.CTkFont(weight="bold"), command=self.save_data)
+        btn_text = "UPDATE INTERACTION" if self.interaction_id else "SAVE INTERACTION"
+        self.save_btn = ctk.CTkButton(self, text=btn_text, fg_color=self.color_neon, text_color="black", hover_color="#bde072", height=40, font=ctk.CTkFont(weight="bold"), command=self.save_data)
         self.save_btn.grid(row=2, column=0, pady=20, padx=40, sticky="ew")
         
         if self.interaction_id:
@@ -129,10 +135,10 @@ class AddInteractionWindow(ctk.CTkToplevel):
     def save_data(self):
         notes = self.notes_text.get("1.0", "end-1c").strip()
         if not notes:
-            self.notes_text.configure(border_color="#A52A2A")
+            self.notes_text.configure(border_color=self.color_error)
             show_alert(self, "Validation Error", "Interaction Notes are required.")
             return
-        self.notes_text.configure(border_color=self.color_green)
+        self.notes_text.configure(border_color=self.border_input)
 
         cont_id = self.contact_dict.get(self.contact_var.get())
         if not cont_id:
@@ -158,7 +164,7 @@ class AddInteractionWindow(ctk.CTkToplevel):
                     link_product_to_interaction(saved_id, p_id)
             
             # --- ÚLTIMO CONTACTO ---
-            if opp_id: # Si la interacción se vinculó a una Oportunidad
+            if opp_id: 
                 today_str = date.today().strftime('%Y-%m-%d')
                 update_last_contact_date(opp_id, today_str)
             

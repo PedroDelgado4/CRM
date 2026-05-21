@@ -118,8 +118,10 @@ class CompanyView(ctk.CTkFrame):
         term = self.search_entry.get()
         companies = search_companies(term, self.current_sort, self.sort_order) if term else get_all_companies(self.current_sort, self.sort_order)
 
-        for comp in companies:
-            row = ctk.CTkFrame(self.list_frame, height=40, corner_radius=0, fg_color="transparent")
+        for r_idx, comp in enumerate(companies):
+            bg_color = "#151515" if r_idx % 2 == 0 else "#1E1E1E"
+            
+            row = ctk.CTkFrame(self.list_frame, height=40, corner_radius=0, fg_color=bg_color)
             row.pack(fill="x", pady=1)
 
             ctk.CTkLabel(row, text=comp[1], width=self.col_widths[0], anchor="center", 

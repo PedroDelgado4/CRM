@@ -168,7 +168,9 @@ class OpportunityView(ctk.CTkFrame):
 
 
         for r_idx, o in enumerate(opps):
-            row = ctk.CTkFrame(self.list_frame, height=45, corner_radius=0, fg_color="transparent")
+            bg_color = "#151515" if r_idx % 2 == 0 else "#1E1E1E"
+            
+            row = ctk.CTkFrame(self.list_frame, height=40, corner_radius=0, fg_color=bg_color)
             row.pack(fill="x", pady=1)
 
             for col_idx, width in enumerate(self.col_widths):

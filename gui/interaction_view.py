@@ -154,7 +154,9 @@ class InteractionView(ctk.CTkFrame):
             interactions = get_all_interactions(self.current_sort, self.sort_order, type_val)
 
         for r_idx, i in enumerate(interactions):
-            row = ctk.CTkFrame(self.list_frame, height=45, corner_radius=0, fg_color="transparent")
+            bg_color = "#151515" if r_idx % 2 == 0 else "#1E1E1E"
+            
+            row = ctk.CTkFrame(self.list_frame, height=40, corner_radius=0, fg_color=bg_color)
             row.pack(fill="x", pady=1)
 
             # Cada columna tendrá exactamente el ancho de la cabecera

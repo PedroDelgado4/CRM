@@ -19,7 +19,12 @@ class AddOpportunityWindow(ctk.CTkToplevel):
         self.geometry("550x850") 
         self.attributes("-topmost", True)
         
-        self.color_green = "#2E8D1B"
+        # --- COLORES NEON NIGHT ---
+        self.configure(fg_color="#050505")
+        self.color_neon = "#DEFF9A"
+        self.color_error = "#ff4d4d"
+        self.bg_input = "#0A0A0A"
+        self.border_input = "#333333"
         
         # --- CARGA DE DATOS RELACIONALES ---
         self.company_data = get_all_companies(sort_by="name", order="ASC")
@@ -55,8 +60,8 @@ class AddOpportunityWindow(ctk.CTkToplevel):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        header_text = "Edit Opportunity Details" if self.opp_id else "Opportunity Details"
-        self.title_label = ctk.CTkLabel(self, text=header_text, font=ctk.CTkFont(size=20, weight="bold"), text_color=self.color_green)
+        header_text = "EDIT OPPORTUNITY" if self.opp_id else "NEW OPPORTUNITY"
+        self.title_label = ctk.CTkLabel(self, text=header_text, font=ctk.CTkFont(size=20, weight="bold"), text_color=self.color_neon)
         self.title_label.grid(row=0, column=0, pady=(20, 10), sticky="ew")
 
         self.scroll_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
@@ -68,70 +73,70 @@ class AddOpportunityWindow(ctk.CTkToplevel):
 
         # 2. Empresa y Contacto
         self.company_var = ctk.StringVar(value="-- Select Company --")
-        ctk.CTkOptionMenu(self.scroll_frame, variable=self.company_var, values=company_names, fg_color="#3F3F3F", button_color=self.color_green).grid(row=1, column=0, pady=8, sticky="ew")
+        ctk.CTkOptionMenu(self.scroll_frame, variable=self.company_var, values=company_names, fg_color=self.bg_input, button_color=self.color_neon, button_hover_color="#bde072", text_color="white", dropdown_fg_color="#151515").grid(row=1, column=0, pady=8, sticky="ew")
 
         self.contact_var = ctk.StringVar(value="-- Select Contact --")
-        ctk.CTkOptionMenu(self.scroll_frame, variable=self.contact_var, values=contact_names, fg_color="#3F3F3F", button_color=self.color_green).grid(row=2, column=0, pady=8, sticky="ew")
+        ctk.CTkOptionMenu(self.scroll_frame, variable=self.contact_var, values=contact_names, fg_color=self.bg_input, button_color=self.color_neon, button_hover_color="#bde072", text_color="white", dropdown_fg_color="#151515").grid(row=2, column=0, pady=8, sticky="ew")
 
         # 3. Estado y Prioridad
         self.status_var = ctk.StringVar(value="Qualification")
-        ctk.CTkOptionMenu(self.scroll_frame, variable=self.status_var, values=list(self.status_map.keys()), fg_color="#3F3F3F", button_color=self.color_green).grid(row=3, column=0, pady=8, sticky="ew")
+        ctk.CTkOptionMenu(self.scroll_frame, variable=self.status_var, values=list(self.status_map.keys()), fg_color=self.bg_input, button_color=self.color_neon, button_hover_color="#bde072", text_color="white", dropdown_fg_color="#151515").grid(row=3, column=0, pady=8, sticky="ew")
 
         self.priority_var = ctk.StringVar(value="Medium")
-        ctk.CTkOptionMenu(self.scroll_frame, variable=self.priority_var, values=list(self.priority_map.keys()), fg_color="#3F3F3F", button_color=self.color_green).grid(row=4, column=0, pady=8, sticky="ew")
+        ctk.CTkOptionMenu(self.scroll_frame, variable=self.priority_var, values=list(self.priority_map.keys()), fg_color=self.bg_input, button_color=self.color_neon, button_hover_color="#bde072", text_color="white", dropdown_fg_color="#151515").grid(row=4, column=0, pady=8, sticky="ew")
 
         # 4. Valor y Fechas
         self.value_entry = self.create_input(self.scroll_frame, "Estimated Value (€)", 5)
         
         # FECHAS CON TKCALENDAR
-        ctk.CTkLabel(self.scroll_frame, text="Proposal Deadline:").grid(row=6, column=0, pady=(10,0), sticky="w")
+        ctk.CTkLabel(self.scroll_frame, text="Proposal Deadline:", text_color="white").grid(row=6, column=0, pady=(10,0), sticky="w")
         self.proposal_date_entry = DateEntry(
             self.scroll_frame, width=20, 
-            background='#3F3F3F', foreground='white', borderwidth=0,
-            selectbackground=self.color_green, selectforeground='white',
-            normalbackground='#2b2b2b', normalforeground='white',
-            headersbackground='#3F3F3F', headersforeground='white',
+            background=self.bg_input, foreground='white', borderwidth=0,
+            selectbackground=self.color_neon, selectforeground='black',
+            normalbackground=self.bg_input, normalforeground='white',
+            headersbackground='#151515', headersforeground='white',
             date_pattern='yyyy-mm-dd'
         )
         self.proposal_date_entry.grid(row=7, column=0, pady=(0,8), sticky="w")
 
-        ctk.CTkLabel(self.scroll_frame, text="Expected Close Date:").grid(row=8, column=0, pady=(10,0), sticky="w")
+        ctk.CTkLabel(self.scroll_frame, text="Expected Close Date:", text_color="white").grid(row=8, column=0, pady=(10,0), sticky="w")
         self.close_date_entry = DateEntry(
             self.scroll_frame, width=20, 
-            background='#3F3F3F', foreground='white', borderwidth=0,
-            selectbackground=self.color_green, selectforeground='white',
-            normalbackground='#2b2b2b', normalforeground='white',
-            headersbackground='#3F3F3F', headersforeground='white',
+            background=self.bg_input, foreground='white', borderwidth=0,
+            selectbackground=self.color_neon, selectforeground='black',
+            normalbackground=self.bg_input, normalforeground='white',
+            headersbackground='#151515', headersforeground='white',
             date_pattern='yyyy-mm-dd'
         )
         self.close_date_entry.grid(row=9, column=0, pady=(0,8), sticky="w")
 
         # 5. Asignado a
         self.assign_var = ctk.StringVar(value="-- Unassigned --")
-        ctk.CTkOptionMenu(self.scroll_frame, variable=self.assign_var, values=user_names, fg_color="#3F3F3F", button_color=self.color_green).grid(row=10, column=0, pady=8, sticky="ew")
+        ctk.CTkOptionMenu(self.scroll_frame, variable=self.assign_var, values=user_names, fg_color=self.bg_input, button_color=self.color_neon, button_hover_color="#bde072", text_color="white", dropdown_fg_color="#151515").grid(row=10, column=0, pady=8, sticky="ew")
 
         # --- 6. SECCIÓN PRODUCTOS ---
-        ctk.CTkLabel(self.scroll_frame, text="Select Products/Services:", font=ctk.CTkFont(weight="bold")).grid(row=11, column=0, pady=(15, 5), sticky="w")
-        self.prod_frame = ctk.CTkFrame(self.scroll_frame, fg_color="#2A2A2A")
+        ctk.CTkLabel(self.scroll_frame, text="Select Products/Services:", font=ctk.CTkFont(weight="bold"), text_color="white").grid(row=11, column=0, pady=(15, 5), sticky="w")
+        self.prod_frame = ctk.CTkFrame(self.scroll_frame, fg_color="#151515", border_width=1, border_color="#333")
         self.prod_frame.grid(row=12, column=0, sticky="ew", pady=5)
         
         all_prods = get_all_products()
         for idx, p in enumerate(all_prods):
             var = ctk.BooleanVar(value=False)
-            cb = ctk.CTkCheckBox(self.prod_frame, text=f"{p[1]} ({p[4]:,.2f}€)", variable=var, text_color="white", fg_color=self.color_green, hover_color="#246B15", border_color=self.color_green)
-            cb.pack(anchor="w", padx=10, pady=5)
+            cb = ctk.CTkCheckBox(self.prod_frame, text=f"{p[1]} ({p[4]:,.2f}€)", variable=var, text_color="white", fg_color=self.color_neon, checkmark_color="black", hover_color="#bde072", border_color="#555")
+            cb.pack(anchor="w", padx=10, pady=10)
             self.product_checkboxes[p[0]] = (var, p[4])
 
         # Botón Guardar
-        btn_text = "Update Opportunity" if self.opp_id else "Save Opportunity"
-        self.save_btn = ctk.CTkButton(self, text=btn_text, fg_color=self.color_green, hover_color="#246B15", height=40, font=ctk.CTkFont(weight="bold"), command=self.save_data)
+        btn_text = "UPDATE OPPORTUNITY" if self.opp_id else "SAVE OPPORTUNITY"
+        self.save_btn = ctk.CTkButton(self, text=btn_text, fg_color=self.color_neon, text_color="black", hover_color="#bde072", height=40, font=ctk.CTkFont(weight="bold"), command=self.save_data)
         self.save_btn.grid(row=2, column=0, pady=20, padx=40, sticky="ew")
         
         if self.opp_id:
             self.populate_data()
 
     def create_input(self, master, placeholder, row_idx):
-        entry = ctk.CTkEntry(master, placeholder_text=placeholder, height=35, border_color=self.color_green)
+        entry = ctk.CTkEntry(master, placeholder_text=placeholder, height=35, fg_color=self.bg_input, border_color=self.border_input, text_color="white")
         entry.grid(row=row_idx, column=0, pady=8, sticky="ew")
         return entry
 
@@ -177,18 +182,18 @@ class AddOpportunityWindow(ctk.CTkToplevel):
     def save_data(self):
         name = self.name_entry.get()
         if not name.strip():
-            self.name_entry.configure(border_color="#A52A2A")
+            self.name_entry.configure(border_color=self.color_error)
             return
-        self.name_entry.configure(border_color=self.color_green)
+        self.name_entry.configure(border_color=self.border_input)
 
         val_raw = self.value_entry.get().strip()
         est_value = 0.0
         if val_raw:
             try:
                 est_value = float(val_raw.replace(",", "."))
-                self.value_entry.configure(border_color=self.color_green)
+                self.value_entry.configure(border_color=self.border_input)
             except ValueError:
-                self.value_entry.configure(border_color="#A52A2A")
+                self.value_entry.configure(border_color=self.color_error)
                 return
 
         comp_id = self.company_dict.get(self.company_var.get())

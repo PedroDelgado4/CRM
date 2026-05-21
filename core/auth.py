@@ -10,12 +10,15 @@ def verify_login(username, password):
     if connection:
         cursor = connection.cursor()
         hashed_pw = hash_password(password)
-        query = "SELECT id, username, role FROM users WHERE username = ? AND password = ?"
+        query = "SELECT id, username, role, is_active FROM users WHERE username = ? AND password = ?"
         cursor.execute(query, (username, hashed_pw))
         user_data = cursor.fetchone()
         connection.close()
 
-        return user_data
+        # 2. Verificamos: si existe y is_active (índice 3) es 1, devolvemos los datos
+        # Si no está activo (es 0), devolvemos None aunque la contraseña sea correcta
+        if user_data and user_data[3] == 1:
+            return user_data
     return None
 
 def add_user(username, password, role):
@@ -24,7 +27,7 @@ def add_user(username, password, role):
         try:
             cursor = connection.cursor()
             hashed_pw = hash_password(password)
-            query = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)"
+            query = "INSERT INTO users (username, password, role, is_active) VALUES (?, ?, ?, 1)"
             cursor.execute(query, (username, hashed_pw, role))
             connection.commit()
             print(f"User {username} added successfully.")
@@ -42,7 +45,8 @@ def get_all_users():
     users = []
     if connection:
         cursor = connection.cursor()
-        cursor.execute("SELECT id, username, role FROM users")
+        # IMPORTANTE: Ahora pedimos 4 datos (id, username, role, is_active)
+        cursor.execute("SELECT id, username, role, is_active FROM users")
         users = cursor.fetchall()
         connection.close()
     return users
@@ -70,6 +74,21 @@ def update_password(user_id, new_password):
         except sqlite3.Error as e:
             print(f"Error updating password {e}")
             return False
+        finally:
+            connection.close()
+    return False
+
+def toggle_user_status(user_id, status):
+    """ Cambia el estado is_active de un usuario (1 = Activo, 0 = Inactivo) """
+    connection = get_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            cursor.execute("UPDATE users SET is_active = ? WHERE id = ?", (status, user_id))
+            connection.commit()
+            return True
+        except Exception as e:
+            print(f"Error toggling user status: {e}")
         finally:
             connection.close()
     return False

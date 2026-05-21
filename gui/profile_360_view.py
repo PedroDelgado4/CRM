@@ -135,9 +135,11 @@ class Profile360View(ctk.CTkFrame):
 
     def refresh_products(self):
         for w in self.scroll_prods.winfo_children(): w.destroy()
-        for p in get_company_products(self.company_id):
-            row = ctk.CTkFrame(self.scroll_prods, fg_color="#3F3F3F", corner_radius=5)
-            row.pack(fill="x", pady=2)
+        for r_idx, p in get_company_products(self.company_id):
+            bg_color = "#151515" if r_idx % 2 == 0 else "#1E1E1E"
+            
+            row = ctk.CTkFrame(self.list_frame, height=40, corner_radius=0, fg_color=bg_color)
+            row.pack(fill="x", pady=1)
             ctk.CTkLabel(row, text=f"{p[1]}", font=ctk.CTkFont(weight="bold"), width=200, anchor="w", text_color="white").pack(side="left", padx=10, pady=5)
             ctk.CTkLabel(row, text=p[2] or "No Category", width=150, anchor="w", text_color="white").pack(side="left", padx=5)
             ctk.CTkLabel(row, text=p[3] or "No Billing Model", width=150, anchor="w", text_color="white").pack(side="left", padx=5)

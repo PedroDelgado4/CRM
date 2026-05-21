@@ -129,8 +129,10 @@ class FinanceView(ctk.CTkFrame):
         term = self.search_entry.get()
         entries = search_finances(term, self.current_sort, self.sort_order) if term else get_all_finances(self.current_sort, self.sort_order)
 
-        for e in entries:
-            row = ctk.CTkFrame(self.list_frame, height=40, corner_radius=0, fg_color="transparent")
+        for r_idx, e in enumerate(entries):
+            bg_color = "#151515" if r_idx % 2 == 0 else "#1E1E1E"
+            
+            row = ctk.CTkFrame(self.list_frame, height=40, corner_radius=0, fg_color=bg_color)
             row.pack(fill="x", pady=1)
 
             # Col 0: Fecha

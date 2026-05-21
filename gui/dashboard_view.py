@@ -8,6 +8,7 @@ class DashboardView(ctk.CTkFrame):
         super().__init__(master, fg_color="transparent")
         self.user_data = user_data
         
+        self.color_neon = "#DEFF9A"
         self.color_green = "#2E8D1B"
         self.color_header = "#3F3F3F"
         self.color_silver = "#D9D9D9"
@@ -44,8 +45,9 @@ class DashboardView(ctk.CTkFrame):
             text="📊 Generate Detailed Sales Report (HTML)", 
             height=50,
             font=ctk.CTkFont(weight="bold"),
-            fg_color=self.color_green,
+            fg_color=self.color_neon,
             hover_color="#246B15",
+            text_color="black",
             command=generate_html_report
         )
         self.report_btn.grid(row=3, column=0, padx=10, pady=10, sticky="ew")
@@ -73,7 +75,7 @@ class DashboardView(ctk.CTkFrame):
         container.grid(row=5, column=0, columnspan=2, sticky="ew", padx=10, pady=(0, 20))
         
         if not suggestions:
-            ctk.CTkLabel(container, text="Excellent work! All your clients with contacts have active opportunities.", text_color=self.color_silver, font=ctk.CTkFont(style="italic")).pack(anchor="w", pady=10)
+            ctk.CTkLabel(container, text="Excellent work! All your clients with contacts have active opportunities.", text_color=self.color_silver, font=ctk.CTkFont(slant="italic")).pack(anchor="w", pady=10)
             return
 
         for s in suggestions:
