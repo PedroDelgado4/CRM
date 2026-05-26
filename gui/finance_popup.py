@@ -12,44 +12,40 @@ class FinancePopup(ctk.CTkToplevel):
         
         title = "Edit Finance Record" if finance_id else "New Finance Record"
         self.title(f"CRM FDT - {title}")
-        self.geometry("400x420")
+        self.geometry("400x380")
         self.grab_set()
 
-        # --- COLORES NEON NIGHT ---
+        # COLORES NEON NIGHT
         self.configure(fg_color="#050505")
-        self.surface_color = "#151515"
-        self.input_bg = "#0A0A0A"
+        self.bg_input = "#0A0A0A"
         self.border_input = "#333333"
-        self.neon_accent = "#DEFF9A"
+        self.color_neon = "#DEFF9A"
 
-        header_text = "EDIT RECORD" if self.finance_id else "NEW RECORD"
-        ctk.CTkLabel(self, text=header_text, font=ctk.CTkFont(size=20, weight="bold"), text_color=self.neon_accent).pack(pady=(20, 0))
-
-        form_frame = ctk.CTkFrame(self, fg_color=self.surface_color, border_width=1, border_color="#222", corner_radius=10)
+        form_frame = ctk.CTkFrame(self, fg_color="#151515", border_width=1, border_color="#333", corner_radius=10)
         form_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
         # 1. Type
         ctk.CTkLabel(form_frame, text="Type:", text_color="white").grid(row=0, column=0, padx=10, pady=15, sticky="e")
-        self.type_combo = ctk.CTkComboBox(form_frame, values=["income", "expense"], fg_color=self.input_bg, button_color=self.neon_accent, button_hover_color="#bde072", text_color="black", dropdown_fg_color="#151515")
+        self.type_combo = ctk.CTkComboBox(form_frame, values=["income", "expense"], fg_color=self.bg_input, border_color=self.border_input, text_color="white", button_color="#223E22", button_hover_color="#bde072", dropdown_fg_color="#151515")
         self.type_combo.grid(row=0, column=1, padx=10, pady=15, sticky="w")
 
         # 2. Amount
         ctk.CTkLabel(form_frame, text="Amount (€):", text_color="white").grid(row=1, column=0, padx=10, pady=15, sticky="e")
-        self.amount_entry = ctk.CTkEntry(form_frame, fg_color=self.input_bg, border_color=self.border_input, text_color="white")
+        self.amount_entry = ctk.CTkEntry(form_frame, fg_color=self.bg_input, border_color=self.border_input, text_color="white")
         self.amount_entry.grid(row=1, column=1, padx=10, pady=15, sticky="w")
 
         # 3. Description
         ctk.CTkLabel(form_frame, text="Description:", text_color="white").grid(row=2, column=0, padx=10, pady=15, sticky="e")
-        self.desc_entry = ctk.CTkEntry(form_frame, fg_color=self.input_bg, border_color=self.border_input, text_color="white")
+        self.desc_entry = ctk.CTkEntry(form_frame, fg_color=self.bg_input, border_color=self.border_input, text_color="white")
         self.desc_entry.grid(row=2, column=1, padx=10, pady=15, sticky="w")
 
         # 4. Date (tkcalendar DateEntry)
         ctk.CTkLabel(form_frame, text="Date:", text_color="white").grid(row=3, column=0, padx=10, pady=15, sticky="e")
         self.date_entry = DateEntry(
             form_frame, width=20, 
-            background=self.input_bg, foreground='white', borderwidth=0,
-            selectbackground=self.neon_accent, selectforeground='black',
-            normalbackground=self.input_bg, normalforeground='white',
+            background=self.bg_input, foreground='white', borderwidth=0,
+            selectbackground=self.color_neon, selectforeground='black',
+            normalbackground=self.bg_input, normalforeground='white',
             headersbackground='#151515', headersforeground='white',
             date_pattern='yyyy-mm-dd'
         )
@@ -58,8 +54,7 @@ class FinancePopup(ctk.CTkToplevel):
         if self.finance_id:
             self.load_data()
 
-        btn_text = "UPDATE RECORD" if self.finance_id else "SAVE RECORD"
-        self.save_btn = ctk.CTkButton(self, text=btn_text, fg_color=self.neon_accent, text_color="black", hover_color="#bde072", font=ctk.CTkFont(weight="bold"), command=self.save_finance)
+        self.save_btn = ctk.CTkButton(self, text="SAVE", fg_color=self.color_neon, text_color="black", hover_color="#bde072", font=ctk.CTkFont(weight="bold"), command=self.save_finance)
         self.save_btn.pack(pady=(0, 20))
 
     def load_data(self):

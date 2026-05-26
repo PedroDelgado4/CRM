@@ -19,10 +19,10 @@ class AddOpportunityWindow(ctk.CTkToplevel):
         self.geometry("550x850") 
         self.attributes("-topmost", True)
         
-        # --- COLORES NEON NIGHT ---
+        # COLORES NEON NIGHT
         self.configure(fg_color="#050505")
         self.color_neon = "#DEFF9A"
-        self.color_error = "#ff4d4d"
+        self.color_error = "#A52A2A"
         self.bg_input = "#0A0A0A"
         self.border_input = "#333333"
         
@@ -60,7 +60,7 @@ class AddOpportunityWindow(ctk.CTkToplevel):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        header_text = "EDIT OPPORTUNITY" if self.opp_id else "NEW OPPORTUNITY"
+        header_text = "Edit Opportunity Details" if self.opp_id else "Opportunity Details"
         self.title_label = ctk.CTkLabel(self, text=header_text, font=ctk.CTkFont(size=20, weight="bold"), text_color=self.color_neon)
         self.title_label.grid(row=0, column=0, pady=(20, 10), sticky="ew")
 
@@ -71,19 +71,19 @@ class AddOpportunityWindow(ctk.CTkToplevel):
         # 1. Nombre
         self.name_entry = self.create_input(self.scroll_frame, "Opportunity Name *", 0)
 
-        # 2. Empresa y Contacto
+        # 2. Empresa y Contacto (Usando ComboBox para color de flecha)
         self.company_var = ctk.StringVar(value="-- Select Company --")
-        ctk.CTkOptionMenu(self.scroll_frame, variable=self.company_var, values=company_names, fg_color=self.bg_input, button_color=self.color_neon, button_hover_color="#bde072", text_color="white", dropdown_fg_color="#151515").grid(row=1, column=0, pady=8, sticky="ew")
+        ctk.CTkComboBox(self.scroll_frame, variable=self.company_var, values=company_names, fg_color=self.bg_input, border_color=self.border_input, text_color="white", button_color="#223E22", button_hover_color="#bde072", dropdown_fg_color="#151515").grid(row=1, column=0, pady=8, sticky="ew")
 
         self.contact_var = ctk.StringVar(value="-- Select Contact --")
-        ctk.CTkOptionMenu(self.scroll_frame, variable=self.contact_var, values=contact_names, fg_color=self.bg_input, button_color=self.color_neon, button_hover_color="#bde072", text_color="white", dropdown_fg_color="#151515").grid(row=2, column=0, pady=8, sticky="ew")
+        ctk.CTkComboBox(self.scroll_frame, variable=self.contact_var, values=contact_names, fg_color=self.bg_input, border_color=self.border_input, text_color="white", button_color="#223E22", button_hover_color="#bde072", dropdown_fg_color="#151515").grid(row=2, column=0, pady=8, sticky="ew")
 
         # 3. Estado y Prioridad
         self.status_var = ctk.StringVar(value="Qualification")
-        ctk.CTkOptionMenu(self.scroll_frame, variable=self.status_var, values=list(self.status_map.keys()), fg_color=self.bg_input, button_color=self.color_neon, button_hover_color="#bde072", text_color="white", dropdown_fg_color="#151515").grid(row=3, column=0, pady=8, sticky="ew")
+        ctk.CTkComboBox(self.scroll_frame, variable=self.status_var, values=list(self.status_map.keys()), fg_color=self.bg_input, border_color=self.border_input, text_color="white", button_color="#223E22", button_hover_color="#bde072", dropdown_fg_color="#151515").grid(row=3, column=0, pady=8, sticky="ew")
 
         self.priority_var = ctk.StringVar(value="Medium")
-        ctk.CTkOptionMenu(self.scroll_frame, variable=self.priority_var, values=list(self.priority_map.keys()), fg_color=self.bg_input, button_color=self.color_neon, button_hover_color="#bde072", text_color="white", dropdown_fg_color="#151515").grid(row=4, column=0, pady=8, sticky="ew")
+        ctk.CTkComboBox(self.scroll_frame, variable=self.priority_var, values=list(self.priority_map.keys()), fg_color=self.bg_input, border_color=self.border_input, text_color="white", button_color="#223E22", button_hover_color="#bde072", dropdown_fg_color="#151515").grid(row=4, column=0, pady=8, sticky="ew")
 
         # 4. Valor y Fechas
         self.value_entry = self.create_input(self.scroll_frame, "Estimated Value (€)", 5)
@@ -113,7 +113,7 @@ class AddOpportunityWindow(ctk.CTkToplevel):
 
         # 5. Asignado a
         self.assign_var = ctk.StringVar(value="-- Unassigned --")
-        ctk.CTkOptionMenu(self.scroll_frame, variable=self.assign_var, values=user_names, fg_color=self.bg_input, button_color=self.color_neon, button_hover_color="#bde072", text_color="white", dropdown_fg_color="#151515").grid(row=10, column=0, pady=8, sticky="ew")
+        ctk.CTkComboBox(self.scroll_frame, variable=self.assign_var, values=user_names, fg_color=self.bg_input, border_color=self.border_input, text_color="white", button_color="#223E22", button_hover_color="#bde072", dropdown_fg_color="#151515").grid(row=10, column=0, pady=8, sticky="ew")
 
         # --- 6. SECCIÓN PRODUCTOS ---
         ctk.CTkLabel(self.scroll_frame, text="Select Products/Services:", font=ctk.CTkFont(weight="bold"), text_color="white").grid(row=11, column=0, pady=(15, 5), sticky="w")
@@ -123,12 +123,12 @@ class AddOpportunityWindow(ctk.CTkToplevel):
         all_prods = get_all_products()
         for idx, p in enumerate(all_prods):
             var = ctk.BooleanVar(value=False)
-            cb = ctk.CTkCheckBox(self.prod_frame, text=f"{p[1]} ({p[4]:,.2f}€)", variable=var, text_color="white", fg_color=self.color_neon, checkmark_color="black", hover_color="#bde072", border_color="#555")
-            cb.pack(anchor="w", padx=10, pady=10)
+            cb = ctk.CTkCheckBox(self.prod_frame, text=f"{p[1]} ({p[4]:,.2f}€)", variable=var, text_color="white", fg_color=self.color_neon, hover_color="#bde072", checkmark_color="black", border_color="#555")
+            cb.pack(anchor="w", padx=10, pady=5)
             self.product_checkboxes[p[0]] = (var, p[4])
 
         # Botón Guardar
-        btn_text = "UPDATE OPPORTUNITY" if self.opp_id else "SAVE OPPORTUNITY"
+        btn_text = "Update Opportunity" if self.opp_id else "Save Opportunity"
         self.save_btn = ctk.CTkButton(self, text=btn_text, fg_color=self.color_neon, text_color="black", hover_color="#bde072", height=40, font=ctk.CTkFont(weight="bold"), command=self.save_data)
         self.save_btn.grid(row=2, column=0, pady=20, padx=40, sticky="ew")
         

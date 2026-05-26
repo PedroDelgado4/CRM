@@ -16,11 +16,12 @@ class AddCompanyWindow(ctk.CTkToplevel):
 
         self.color_green = "#2E8D1B"
         self.color_silver = "#D9D9D9"
+        self.color_neon = "#DEFF9A"
 
         self.grid_columnconfigure(0, weight=1)
 
         header_text = "Edit Company Details" if self.company_id else "Company Details"
-        self.title_label = ctk.CTkLabel(self, text=header_text, font=ctk.CTkFont(size=20, weight="bold"), text_color=self.color_green)
+        self.title_label = ctk.CTkLabel(self, text=header_text, font=ctk.CTkFont(size=20, weight="bold"), text_color=self.color_neon)
         self.title_label.grid(row=0, column=0, pady=(25,15), sticky="ew")
 
         self.form_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -36,15 +37,15 @@ class AddCompanyWindow(ctk.CTkToplevel):
         self.addr_entry = self.create_input(self.form_frame, "Physical Address",5)
 
         btn_text = "Update" if self.company_id else "Save"
-        self.save_btn = ctk.CTkButton(self, text=btn_text, fg_color=self.color_green, hover_color="#246B15", height=40, 
-                                      border_color=self.color_green, command=self.save_data)
+        self.save_btn = ctk.CTkButton(self, text=btn_text, fg_color=self.color_green, hover_color=self.color_green, height=40, 
+                                      border_color=self.color_neon, command=self.save_data)
         self.save_btn.grid(row=2, column=0, pady=30, padx= 40, sticky="ew")
         
         if self.company_data:
             self.populate_data()
         
     def create_input(self, master, placeholder, row_idx):
-        entry = ctk.CTkEntry(master, placeholder_text=placeholder, height=35, border_color=self.color_green)
+        entry = ctk.CTkEntry(master, placeholder_text=placeholder, height=35, border_color=self.color_neon)
         entry.grid(row=row_idx, column= 0, pady=8, sticky="ew")
         return entry
 

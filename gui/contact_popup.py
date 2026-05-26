@@ -15,6 +15,8 @@ class AddContactWindow(ctk.CTkToplevel):
         self.attributes("-topmost", True)
 
         self.color_green = "#2E8D1B"
+        self.color_neon = "#DEFF9A"
+
 
         # --- Carga de datos para desplegables ---
         self.company_data = get_all_companies(sort_by="name", order="ASC")
@@ -33,7 +35,7 @@ class AddContactWindow(ctk.CTkToplevel):
         self.grid_columnconfigure(0, weight=1)
 
         header_text = "Edit Contact Details" if self.contact_id else "Contact Details"
-        self.title_label = ctk.CTkLabel(self, text=header_text, font=ctk.CTkFont(size=20, weight="bold"), text_color=self.color_green)
+        self.title_label = ctk.CTkLabel(self, text=header_text, font=ctk.CTkFont(size=20, weight="bold"), text_color=self.color_neon)
         self.title_label.grid(row=0, column=0, pady=(20,10), sticky="ew")
 
         self.form_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -44,7 +46,7 @@ class AddContactWindow(ctk.CTkToplevel):
 
         self.company_var = ctk.StringVar(value="--- Select company ---")
         self.company_menu = ctk.CTkOptionMenu(self.form_frame, variable=self.company_var, values=company_names, 
-                                              fg_color="#3F3F3F", button_color=self.color_green, button_hover_color="#246b15")
+                                              fg_color="#3F3F3F", button_color="#223E22", button_hover_color="#246b15")
         self.company_menu.grid(row=1, column=0, pady=8, sticky="ew")
 
         self.email_entry = self.create_input(self.form_frame, "Email address", 2)
@@ -53,12 +55,12 @@ class AddContactWindow(ctk.CTkToplevel):
         self.linkedin_entry = self.create_input(self.form_frame, "LinkedIn URL", 5)
 
         self.vip_var = ctk.IntVar(value=0)
-        self.vip_switch = ctk.CTkSwitch(self.form_frame, text="Mark as VIP contact", variable=self.vip_var, progress_color=self.color_green)
+        self.vip_switch = ctk.CTkSwitch(self.form_frame, text="Mark as VIP contact", variable=self.vip_var, progress_color=self.color_neon)
         self.vip_switch.grid(row=6, column=0, pady=12, sticky="w")
 
         self.assign_var = ctk.StringVar(value="--- Unassigned ---")
         self.assign_menu = ctk.CTkOptionMenu(self.form_frame, variable=self.assign_var, values=user_names, 
-                                              fg_color="#3F3F3F", button_color=self.color_green, button_hover_color="#246b15")
+                                              fg_color="#3F3F3F", button_color="#223E22", button_hover_color="#246b15")
         self.assign_menu.grid(row=7, column=0, pady=8, sticky="ew")
 
         btn_text = "Update contact" if self.contact_id else "Save contact"
@@ -70,7 +72,7 @@ class AddContactWindow(ctk.CTkToplevel):
             self.populate_data()
 
     def create_input(self, master, placeholder, row_idx):
-        entry = ctk.CTkEntry(master, placeholder_text=placeholder, height=35, border_color=self.color_green)
+        entry = ctk.CTkEntry(master, placeholder_text=placeholder, height=35, border_color=self.color_neon)
         entry.grid(row=row_idx, column= 0, pady=8, sticky="ew")
         return entry
 

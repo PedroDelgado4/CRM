@@ -15,6 +15,7 @@ class AddProductWindow(ctk.CTkToplevel):
         self.attributes("-topmost", True)
 
         self.color_green = "#2E8D1B"
+        self.color_neon = "#DEFF9A"
         
         self.categories = ["-- Select Category --", "Servicio", "Curso"]
         self.billing_models = ["-- Select Billing Model --", "Single payment", "Suscription", "Semestral", "Anual"]
@@ -22,7 +23,7 @@ class AddProductWindow(ctk.CTkToplevel):
         self.grid_columnconfigure(0, weight=1)
         
         header_text = "Edit Product Details" if self.product_id else "Product Details"
-        self.title_label = ctk.CTkLabel(self, text=header_text, font=ctk.CTkFont(size=20, weight="bold"), text_color=self.color_green)
+        self.title_label = ctk.CTkLabel(self, text=header_text, font=ctk.CTkFont(size=20, weight="bold"), text_color=self.color_neon)
         self.title_label.grid(row=0, column=0, pady=(20,10), sticky="ew")
 
         self.form_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -34,14 +35,14 @@ class AddProductWindow(ctk.CTkToplevel):
 
         self.category_var = ctk.StringVar(value="-- Select category --")
         self.category_menu = ctk.CTkOptionMenu(self.form_frame, variable=self.category_var, values=self.categories,
-                                               fg_color="#3F3F3F", button_color=self.color_green, button_hover_color="#246B15")
+                                               fg_color="#3F3F3F", button_color="#223E22", button_hover_color="#246B15")
         self.category_menu.grid(row=2, column=0, pady=8, sticky="ew")
 
         self.price_entry = self.create_input(self.form_frame, "Minimum Price (€)", 3)
 
         self.billing_var = ctk.StringVar(value="-- Select Billing Model --")
         self.billing_menu = ctk.CTkOptionMenu(self.form_frame, variable=self.billing_var, values=self.billing_models,
-                                              fg_color="#3F3F3F", button_color=self.color_green, button_hover_color="#246B15")
+                                              fg_color="#3F3F3F", button_color="#223E22", button_hover_color="#246B15")
         self.billing_menu.grid(row=4, column=0, pady=8, sticky="ew")
 
         self.url_entry = self.create_input(self.form_frame, "Dossier / Web URL", 5)
@@ -63,7 +64,7 @@ class AddProductWindow(ctk.CTkToplevel):
             self.populate_data()
 
     def create_input(self, master, placeholder, row_idx):
-        entry = ctk.CTkEntry(master, placeholder_text=placeholder, height=35, border_color=self.color_green)
+        entry = ctk.CTkEntry(master, placeholder_text=placeholder, height=35, border_color=self.color_neon)
         entry.grid(row=row_idx, column=0, pady=8, sticky="ew")
         return entry
 
